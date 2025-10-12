@@ -8,17 +8,12 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  console.log("this is from Nav Bar, user value:", user);
-
   const handleAuthAction = async () => {
+    console.log("clicking the button");
     if (user) {
       // Logout user
-      const response = await logout();
-      if (response.resp) {
-        console.log("User logged out successfully");
-      } else {
-        console.error("Logout failed");
-      }
+      await logout();
+      console.log("User logged out successfully");
     } else {
       // Redirect to login
       router.push("/login");
@@ -26,12 +21,10 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full flex items-center justify-between pl-14 pr-4 py-2 bg-white dark:bg-gray-900 shadow-sm">
-      {/* Logo Section */}
-
+    <nav className="w-full flex items-center justify-between pl-14 pr-4 py-2 bg-white dark:bg-gray-900 shadow">
       <div className="flex items-center space-x-2">
         <Image
-          src="/rocket.png"
+          src="/arkaiv.png"
           alt="App Logo"
           width={30}
           height={30}
@@ -42,22 +35,17 @@ export default function Navbar() {
           onClick={() => router.push("/")}
           className="text-lg font-semibold text-gray-900 dark:text-white cursor-pointer"
         >
-          LaunchPad
+          Arkaiv
         </span>
       </div>
-
-      <div className="flex-1" />
-
-      {/* Auth Button */}
-      <div>
-        <Button
-          onClick={handleAuthAction}
-          className="text-sm font-medium"
-          variant={user ? "outline" : "default"}
-        >
-          {user ? "Logout" : "Login"}
-        </Button>
-      </div>
+      <Button
+        onClick={handleAuthAction}
+        className="text-sm font-medium"
+        size="sm"
+        variant={user ? "outline" : "default"}
+      >
+        {user ? "Logout" : "Login"}
+      </Button>
     </nav>
   );
 }

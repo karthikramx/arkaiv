@@ -8,9 +8,8 @@ export default function Home() {
   const route = useRouter();
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Main content */}
-      <main className="flex flex-1 items-center justify-center -mt-50">
-        <section className="container flex flex-col gap-4 pb-12 pt-4 text-center lg:items-center lg:gap-8 lg:py-20">
+      <main className="flex flex-1 items-center justify-center">
+        <section className="container flex flex-col gap-8 text-center lg:items-center lg:gap-8 mt-[-350px]">
           <div className="flex flex-1 flex-col items-center gap-4 text-center lg:gap-8">
             <div>
               <h1 className="text-4xl font-bold lg:text-6xl">Meet Arkaiv</h1>
@@ -32,6 +31,15 @@ export default function Home() {
               grid="6x4"
             />
           </div>
+          {/* <div className="flex items-center justify-center">
+            <p>
+              Arkaiv is a secure digital workspace that lets individuals and
+              businesses store, organize, and intelligently manage all their
+              important documents in one place. From identity proofs to bank
+              statements, Arkaiv uses AI-powered categorization to ensure your
+              files are always where you need them, when you need them.
+            </p>
+          </div> */}
         </section>
       </main>
 

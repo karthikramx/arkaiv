@@ -31,10 +31,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <Navbar />
-          {children}
-        </AuthProvider>
+        <div className="flex flex-col h-screen overflow-hidden">
+          <AuthProvider>
+            <Navbar />
+            {children}
+          </AuthProvider>
+        </div>
         <Toaster position="top-center"></Toaster>
       </body>
     </html>

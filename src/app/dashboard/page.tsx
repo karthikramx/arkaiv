@@ -13,7 +13,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { MultiFileUpload } from "@/components/file-upload-dropzone";
 
 export default function Dashboard({ children }) {
   return (
@@ -42,7 +41,7 @@ export default function Dashboard({ children }) {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+        <div>{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

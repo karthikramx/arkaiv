@@ -10,38 +10,62 @@ import {
   DropzoneTrigger,
   useDropzone,
 } from "@/components/ui/dropzone";
-import { CloudUploadIcon, Trash2Icon } from "lucide-react";
+import { CloudUploadIcon, Store, Trash2Icon } from "lucide-react";
+import { storage, db } from "@/lib/firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export function MultiFileUpload() {
   const dropzone = useDropzone({
     onDropFile: async (file: File) => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return {
-        status: "success",
-        result: URL.createObjectURL(file),
-      };
+      // Firebase upload logic
+      const storageRef = ref(storage, `uploads/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      return new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            // Optional: monitor progress
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + progress + "% done");
+          },
+          (error) => reject(error),
+          async () => {
+            // Once complete, get the download URL
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+            // Store metadata in Firestore
+            await addDoc(collection(db, "files"), {
+              name: file.name,
+              url: downloadURL,
+              size: file.size,
+              uploadedAt: serverTimestamp(),
+            });
+
+            resolve({
+              status: "success",
+              result: downloadURL,
+            });
+          }
+        );
+      });
     },
     validation: {
       accept: {
-        "pdf/*": [".pdf"],
+        "application/pdf": [".pdf"],
       },
-      maxSize: 10 * 1024 * 1024,
-      maxFiles: 10,
+      maxSize: 10 * 1024 * 1024, // 10 MB
+      maxFiles: 100,
     },
   });
 
   return (
-    <div className="not-prose flex flex-col">
+    <div>
       <Dropzone {...dropzone}>
-        <div>
-          {/* <div className="flex justify-between"> */}
-          {/* <DropzoneDescription>
-              Please select up to 10 images
-            </DropzoneDescription> */}
-          {/* <DropzoneMessage /> */}
-          {/* </div> */}
-
-          <DropzoneFileList className="grid gap-3 p-0 md:grid-cols-2 lg:grid-cols-3">
+        <div className="h-150 overflow-y-scroll p-4">
+          <DropzoneFileList className=" p-10 grid gap-10 md:grid-cols-4 lg:grid-cols-4">
             {dropzone.fileStatuses.map((file) => (
               <DropzoneFileListItem
                 className="overflow-hidden rounded-md bg-secondary p-0 shadow-sm"
@@ -76,19 +100,19 @@ export function MultiFileUpload() {
               </DropzoneFileListItem>
             ))}
           </DropzoneFileList>
-
-          <DropZoneArea>
-            <DropzoneTrigger className="flex flex-col items-center gap-4 bg-transparent p-10 text-center text-sm">
-              <CloudUploadIcon className="size-8" />
-              <div>
-                <p className="font-semibold">Upload Files</p>
-                <p className="text-sm text-muted-foreground">
-                  Click here or drag and drop to upload
-                </p>
-              </div>
-            </DropzoneTrigger>
-          </DropZoneArea>
         </div>
+
+        <DropZoneArea className="absolute left-0 right-0">
+          <DropzoneTrigger className="flex flex-col items-center gap-4 p-10 text-center text-sm">
+            <CloudUploadIcon className="size-8" />
+            <div>
+              <p className="font-semibold">Upload Files</p>
+              <p className="text-sm text-muted-foreground">
+                Click here or drag and drop to upload
+              </p>
+            </div>
+          </DropzoneTrigger>
+        </DropZoneArea>
       </Dropzone>
     </div>
   );

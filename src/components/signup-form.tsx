@@ -55,7 +55,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Mahesh Babu"
                 required
                 onChange={(e) => {
                   setUserName(e.target.value);
@@ -67,7 +67,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="mb@example.com"
                 required
                 onChange={(e) => {
                   setEmail(e.target.value);

@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Dashboard from "../dashboard/page";
+import { MultiFileUpload } from "@/components/file-upload-dropzone";
 
 export default function Home() {
   const { user } = useAuth();
@@ -17,13 +18,5 @@ export default function Home() {
 
   if (!user) return null;
 
-  return (
-    <Dashboard>
-      {
-        <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-          <div className="w-full max-w-sm">{/* <SignupForm /> */}</div>
-        </div>
-      }
-    </Dashboard>
-  );
+  return <Dashboard>{<MultiFileUpload />}</Dashboard>;
 }

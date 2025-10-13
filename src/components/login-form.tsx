@@ -46,7 +46,7 @@ export function LoginForm({
               const response = await login(email, password);
               if (!response.error) {
                 toast("Login Successful");
-                router.push("/");
+                router.push("/home");
               } else if (response.error) {
                 console.log("From the login component, raise toast there");
                 toast("Login Failed, Please check your credentials");

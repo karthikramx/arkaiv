@@ -43,7 +43,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             const response = await signup(email, password, userName);
             if (response.user) {
               toast("Sign up successful!");
-              router.push("/");
+              router.push("/home");
             } else if (!response.user) {
               toast("Failed to Sign you up :/");
             }

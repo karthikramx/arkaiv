@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Dashboard from "../dashboard/page";
-import { MultiFileUpload } from "@/components/file-upload-dropzone";
+import Dropzone from "@/components/dropzone";
 
 export default function Home() {
   const { user } = useAuth();
@@ -18,5 +18,15 @@ export default function Home() {
 
   if (!user) return null;
 
-  return <Dashboard>{<MultiFileUpload />}</Dashboard>;
+  console.log("this is from your home page");
+  console.log("this is the user id : ", user.uid);
+  console.log("this is the user object:", user);
+
+  return (
+    <Dashboard>
+      <div className="w-full h-full flex flex-col">
+        <Dropzone></Dropzone>
+      </div>
+    </Dashboard>
+  );
 }

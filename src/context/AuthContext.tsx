@@ -31,6 +31,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    console.log("this will run on page refresh!");
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -65,6 +66,14 @@ export function AuthProvider({ children }) {
       );
       // updating the profile with display name
       await updateProfile(userCredential.user, { displayName: name });
+
+      // TODO: Add pages to collection more data like
+      // 1. Individual or Team - Get Company Name
+      // 2. Get some questions for insights and analytics
+      // 3. Store this on users collection !
+
+      // TODO: Add users to users collection
+
       return { user: userCredential.user, error: null };
     } catch (error) {
       console.log("Signup Failed:", error);
@@ -93,9 +102,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // consoling user
-  // this is from context
-  console.log("User value from Context, ", user);
+  // console.log("User value from Context, ", user);
 
   // Only render after hydration and Firebase state is ready
   if (!hydrated || loading)

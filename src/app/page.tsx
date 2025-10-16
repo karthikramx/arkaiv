@@ -4,13 +4,13 @@ import { PixelImage } from "@/components/ui/shadcn-io/pixel-image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-export default function Home() {
+export default function Landing() {
   const route = useRouter();
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex flex-1 items-center justify-center">
-        <section className="container flex flex-col gap-8 text-center lg:items-center lg:gap-8 mt-[-350px]">
-          <div className="flex flex-1 flex-col items-center gap-4 text-center lg:gap-8">
+        <section className="container flex flex-col gap-10 text-center lg:items-center lg:gap-8 mt-[-150px]">
+          <div className="flex flex-1 flex-col items-center gap-5 text-center lg:gap-8">
             <div>
               <h1 className="text-4xl font-bold lg:text-6xl">Meet Arkaiv</h1>
               <h2 className="text-lg font-light text-muted-foreground lg:text-3xl">

@@ -41,7 +41,7 @@ export default function Dashboard({ children }) {
             </Breadcrumb>
           </div>
         </header>
-        <div>{children}</div>
+        <div className="h-full bg-gray-75 sm:p-8">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

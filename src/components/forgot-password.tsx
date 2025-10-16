@@ -5,12 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ForgotPassword() {
-  const route = useRouter();
   const [email, setEmail] = useState("");
   const { forgotPassword } = useAuth();
 
@@ -33,7 +31,7 @@ export default function ForgotPassword() {
           onSubmit={async (e) => {
             e.preventDefault();
             try {
-              const response = await forgotPassword(email);
+              await forgotPassword(email);
               console.log("Password Reset Email Sent");
             } catch (err) {
               console.log("Error sending password reset email:", err);

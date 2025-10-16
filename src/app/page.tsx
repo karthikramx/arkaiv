@@ -1,6 +1,5 @@
 "use client";
 
-import { PixelImage } from "@/components/ui/shadcn-io/pixel-image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 

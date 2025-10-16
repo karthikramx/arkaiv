@@ -3,8 +3,6 @@
 import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
   Command,
   Frame,
   GalleryVerticalEnd,
@@ -15,7 +13,7 @@ import {
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
+// import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
@@ -119,8 +117,8 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
-  data.user.email = user.email; //TODO: Fix this shitty code
-  data.user.name = user.displayName;
+  data.user.email = user?.email ?? "";
+  data.user.name = user?.displayName ?? "Update Display Name";
 
   return (
     <Sidebar collapsible="icon" {...props}>

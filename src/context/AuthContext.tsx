@@ -9,19 +9,42 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile,
+  User,
 } from "firebase/auth";
 import { Spinner } from "@/components/ui/spinner";
+import { ReactNode } from "react";
 
-const AuthContext = createContext({
+interface AuthContextType {
+  user: User | null;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ user: User | null; error: Error | null }>;
+  signup: (
+    email: string,
+    password: string,
+    name: string
+  ) => Promise<{ user: User | null; error: Error | null }>;
+  logout: () => Promise<{ resp: boolean | null; error: Error | null }>;
+  forgotPassword: (
+    email: string
+  ) => Promise<{ resp: void | null; error: Error | null }>;
+}
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+const AuthContext = createContext<AuthContextType>({
   user: null,
-  login: async () => {},
-  signup: async () => {},
-  logout: async () => {},
-  forgotpassword: async () => {},
+  login: async () => ({ user: null, error: null }),
+  signup: async () => ({ user: null, error: null }),
+  logout: async () => ({ resp: null, error: null }),
+  forgotPassword: async () => ({ resp: null, error: null }),
 });
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [hydrated, setHydrated] = useState(false); // NEW
 
@@ -52,7 +75,7 @@ export function AuthProvider({ children }) {
       return { user: userCredentials.user, error: null };
     } catch (error) {
       console.log("Login failed:", error);
-      return { user: null, error };
+      return { user: null, error: error as Error };
     }
   };
 
@@ -77,7 +100,7 @@ export function AuthProvider({ children }) {
       return { user: userCredential.user, error: null };
     } catch (error) {
       console.log("Signup Failed:", error);
-      return { user: null, error };
+      return { user: null, error: error as Error };
     }
   };
 
@@ -87,7 +110,7 @@ export function AuthProvider({ children }) {
       await signOut(auth);
       return { resp: true, error: null };
     } catch (error) {
-      return { resp: null, error };
+      return { resp: null, error: error as Error };
     }
   };
 
@@ -98,7 +121,7 @@ export function AuthProvider({ children }) {
       return { resp: response, error: null };
     } catch (error) {
       console.log("Failed to Send Forgot Password Email");
-      return { resp: null, error: error };
+      return { resp: null, error: error as Error };
     }
   };
 

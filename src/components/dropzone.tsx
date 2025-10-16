@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import { createDocument } from "@/lib/firestore";
 import { Spinner } from "./ui/spinner";
-// import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 
 interface Document {
   id: string;

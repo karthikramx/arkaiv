@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { createDocument } from "@/lib/firestore";
 import { Spinner } from "./ui/spinner";
-import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
+// import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 
 interface Document {
   id: string;
@@ -86,16 +86,10 @@ export default function Dropzone() {
 
       {uploading && (
         <div className="absolute top-4 right-4 text-sm rounded-lg shadow">
-          <Item variant="muted">
-            <ItemMedia>
-              <Spinner />
-            </ItemMedia>
-            <ItemContent>
-              <ItemTitle className="line-clamp-1">
-                Uploading Document(s)...
-              </ItemTitle>
-            </ItemContent>
-          </Item>
+          <div className="flex p-2 items-center justify-between">
+            <Spinner />
+            Uploading Document(s)...
+          </div>
         </div>
       )}
 

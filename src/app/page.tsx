@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { PixelImage } from "@/components/ui/shadcn-io/pixel-image";
 
 export default function Landing() {
   const route = useRouter();

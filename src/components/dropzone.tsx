@@ -6,8 +6,8 @@ import {
   collection,
   serverTimestamp,
   query,
-  orderBy,
   onSnapshot,
+  where,
 } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
 import { useDropzone } from "react-dropzone";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { createDocument } from "@/lib/firestore";
 import { Spinner } from "./ui/spinner";
+import { useAuth } from "@/context/AuthContext";
 
 interface Document {
   id: string;
@@ -32,6 +33,7 @@ export default function Dropzone() {
   const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     try {
@@ -45,6 +47,7 @@ export default function Dropzone() {
         createDocument("documents", {
           name: file.name,
           url,
+          uploadedBy: user?.uid,
           createdAt: serverTimestamp(), // May have a UTC
         });
       }
@@ -56,7 +59,10 @@ export default function Dropzone() {
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, "documents"), orderBy("createdAt", "desc"));
+    const q = query(
+      collection(db, "documents"),
+      where("uploadedBy", "==", user?.uid)
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const docs: Document[] = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -123,17 +129,21 @@ export default function Dropzone() {
             <DialogHeader>
               <DialogTitle>{selectedFileName}</DialogTitle>
             </DialogHeader>
-
-            {selectedFileUrl && (
-              <div className="h-[85vh]">
-                <iframe
-                  src={selectedFileUrl}
-                  width="100%"
-                  height="100%"
-                  style={{ border: "none" }}
-                ></iframe>
+            <div className="flex v-screen">
+              <div className="w-[100%]">
+                {selectedFileUrl && (
+                  <div className="h-[85vh]">
+                    <iframe
+                      src={selectedFileUrl}
+                      width="100%"
+                      height="100%"
+                      style={{ border: "none" }}
+                    ></iframe>
+                  </div>
+                )}
               </div>
-            )}
+              <div className="w-[0%] bg-gray-200"></div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

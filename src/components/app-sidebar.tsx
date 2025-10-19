@@ -32,7 +32,7 @@ const data = {
     name: "shadcn",
     email: "m@example.com",
     avatar:
-      "https://media.licdn.com/dms/image/v2/D5635AQHAZzxGtKTVXA/profile-framedphoto-shrink_200_200/B56Zm.ZowoKAAY-/0/1759836015952?e=1760770800&v=beta&t=BioJT7qH1RDtTouNtKqYOo1N_LhIQgJ8wR1I0UN8Vf8",
+      "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png",
   },
   teams: [
     {

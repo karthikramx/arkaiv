@@ -8,7 +8,6 @@ import {
   query,
   onSnapshot,
   where,
-  Timestamp,
 } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
 import { useDropzone } from "react-dropzone";
@@ -30,9 +29,9 @@ import {
 } from "@/components/ui/context-menu";
 import { toast } from "sonner";
 import { deleteStoredDocument } from "@/services/document";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Sree_Krushnadevaraya } from "next/font/google";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { Sree_Krushnadevaraya } from "next/font/google";
 
 interface Document {
   id: string;
@@ -45,21 +44,21 @@ interface Folder {
   name: string;
 }
 
-interface selectedDocument {
-  id: string;
-  name: string;
-  url: string;
-  createdAt: Timestamp;
-  uploadedBy: string;
-}
+// interface selectedDocument {
+//   id: string;
+//   name: string;
+//   url: string;
+//   createdAt: Timestamp;
+//   uploadedBy: string;
+// }
 
 export default function Dropzone() {
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
-  const [selectedDocument, setSelectedDocument] =
-    useState<selectedDocument | null>(null);
+  // const [selectedDocument, setSelectedDocument] =
+  //   useState<selectedDocument | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   // const [metadata, setMetadata] = useState([]);
@@ -161,30 +160,23 @@ export default function Dropzone() {
                   <ContextMenuTrigger>
                     <div
                       key={folder.id}
-                      className="relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer bg-white"
-                      // onDoubleClick={() => {
-                      //   setSelectedFileUrl(doc.url);
-                      //   setSelectedFileName(doc.name);
-                      //   // setSelectedDocument(doc);
-                      //   console.log(doc);
-                      //   setOpen(true);
-                      // }}
+                      className="bg-blue-100 relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
                       title={folder.name}
                     >
                       <div className="flex-1 flex items-center justify-center w-full h-full p-3">
-                        <div className="w-10 h-12 border-2 border-gray-300 bg-gray-50 flex items-center justify-center">
+                        <div>
                           <span className="text-xs text-gray-400">FOLDER</span>
                         </div>
                       </div>
 
-                      <div className="w-full text-center py-2 border-t bg-gray-50 rounded-b-xl">
+                      <div className="w-full text-center py-2 border-t bg-gray-50">
                         <span className="text-xs font-medium text-gray-700 truncate px-2 block">
                           {folder.name}
                         </span>
                       </div>
                     </div>
                     <ContextMenuContent>
-                      <ContextMenuItem>View</ContextMenuItem>
+                      <ContextMenuItem>Open</ContextMenuItem>
                       <ContextMenuItem>Edit Folder Name</ContextMenuItem>
                       <ContextMenuItem>Delete Folder</ContextMenuItem>
                     </ContextMenuContent>
@@ -249,7 +241,7 @@ export default function Dropzone() {
                         </div>
                       </div>
 
-                      <div className="w-full text-center py-2 border-t bg-gray-50 rounded-b-xl">
+                      <div className="w-full text-center py-2 border-t bg-gray-50">
                         <span className="text-xs font-medium text-gray-700 truncate px-2 block">
                           {doc.name}
                         </span>

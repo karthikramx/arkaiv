@@ -48,7 +48,7 @@ export default function Page() {
                   // Creating new user in the users collections
                   createDocument("users", {
                     name: userName,
-                    uid: response?.user?.uid,
+                    userId: response?.user?.uid,
                     email: email,
                     imageUrl: "",
                     accountType: "",
@@ -56,6 +56,17 @@ export default function Page() {
                     teams: [{ teamId: "default", role: "admin" }],
                     createdAt: serverTimestamp(),
                   });
+
+                  // creating default team for each user
+                  createDocument("teams", {
+                    name: "My Archive",
+                    userId: response?.user?.uid,
+                    type: "",
+                    order: 0,
+                    plan: "",
+                    createdAt: serverTimestamp(),
+                  });
+
                   router.push("/home");
                 } else if (!response.user) {
                   toast("Failed to Sign you up :/");

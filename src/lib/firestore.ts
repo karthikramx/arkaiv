@@ -1,4 +1,10 @@
-import { collection, addDoc, DocumentData } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  DocumentData,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "./firebase";
 
 // firestore helper functions
@@ -13,5 +19,14 @@ export const createDocument = async (
     return docRef.id;
   } catch (error) {
     console.log("Error creating document", error);
+  }
+};
+
+export const deleteDocument = async (collectionName: string, id: string) => {
+  try {
+    const docRef = doc(db, collectionName, id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error deleting document:", error);
   }
 };

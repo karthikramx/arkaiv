@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createDocument } from "@/lib/firestore";
+import { createDocument, deleteDocument } from "@/lib/firestore";
 import { Spinner } from "./ui/spinner";
 import { useAuth } from "@/context/AuthContext";
 
@@ -27,6 +27,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { toast } from "sonner";
 
 interface Document {
   id: string;
@@ -132,10 +133,21 @@ export default function Dropzone() {
                 </div>
               </div>
               <ContextMenuContent>
-                <ContextMenuItem>Profile</ContextMenuItem>
-                <ContextMenuItem>Billing</ContextMenuItem>
-                <ContextMenuItem>Team</ContextMenuItem>
-                <ContextMenuItem>Subscription</ContextMenuItem>
+                <ContextMenuItem
+                  onClick={() => {
+                    setOpen(true);
+                  }}
+                >
+                  View
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onClick={async () => {
+                    await deleteDocument("documents", doc.id);
+                    toast("Document Deleted Successfully");
+                  }}
+                >
+                  Delete
+                </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenuTrigger>
           </ContextMenu>

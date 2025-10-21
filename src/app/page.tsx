@@ -3,9 +3,17 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PixelImage } from "@/components/ui/shadcn-io/pixel-image";
+import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
 
 export default function Landing() {
-  const route = useRouter();
+  const router = useRouter();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) router.push("/home");
+  }, [user, router]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex flex-1 items-center justify-center">
@@ -19,7 +27,7 @@ export default function Landing() {
             </div>
             <Button
               onClick={() => {
-                route.push("/signup");
+                router.push("/signup");
               }}
             >
               Get started
@@ -48,7 +56,8 @@ export default function Landing() {
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between text-sm text-gray-600 dark:text-gray-400 px-6">
           <p>© {new Date().getFullYear()} Arkaiv. All rights reserved.</p>
           <p className="flex items-center gap-1">
-            <span className="text-red-600">🇮🇳</span> Made in India
+            <span className="text-red-600">🇮🇳</span> Made with 99% Caffine and
+            1% Love
           </p>
         </div>
       </footer>

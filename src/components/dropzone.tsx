@@ -168,13 +168,10 @@ export default function Dropzone() {
                 <ContextMenuItem>Edit File Name</ContextMenuItem>
                 <ContextMenuItem
                   onClick={async () => {
-                    if (selectedFileUrl)
-                      await deleteStoredDocument(
-                        "documents",
-                        doc.id,
-                        selectedFileUrl
-                      );
-                    toast("Document Deleted Successfully");
+                    if (doc.url) {
+                      await deleteStoredDocument("documents", doc.id, doc.url);
+                      toast("Document Deleted Successfully");
+                    }
                   }}
                 >
                   Delete File

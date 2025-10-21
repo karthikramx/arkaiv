@@ -8,6 +8,7 @@ import {
   query,
   onSnapshot,
   where,
+  Timestamp,
 } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
 import { useDropzone } from "react-dropzone";
@@ -17,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createDocument, deleteDocument } from "@/lib/firestore";
+import { createDocument } from "@/lib/firestore";
 import { Spinner } from "./ui/spinner";
 import { useAuth } from "@/context/AuthContext";
 
@@ -28,6 +29,9 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { toast } from "sonner";
+import { deleteStoredDocument } from "@/services/document";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Document {
   id: string;
@@ -35,13 +39,29 @@ interface Document {
   url: string;
 }
 
+interface selectedDocument {
+  id: string;
+  name: string;
+  url: string;
+  createdAt: Timestamp;
+  uploadedBy: string;
+}
+
 export default function Dropzone() {
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
+  const [selectedDocument, setSelectedDocument] =
+    useState<selectedDocument | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  // const [metadata, setMetadata] = useState([]);
   const { user } = useAuth();
+
+  // const pdfData = {
+  //   filename: "karthik.pdf",
+  //   page: 10,
+  // };
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     try {
@@ -51,11 +71,14 @@ export default function Dropzone() {
         const fileRef = ref(storage, `documents/${file.name}`);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
+        const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(2); // file size calc - MB
 
         createDocument("documents", {
           name: file.name,
           url,
           uploadedBy: user?.uid,
+          size: fileSizeInMB,
+          metadata: [],
           createdAt: serverTimestamp(), // May have a UTC
         });
       }
@@ -116,6 +139,8 @@ export default function Dropzone() {
                 onDoubleClick={() => {
                   setSelectedFileUrl(doc.url);
                   setSelectedFileName(doc.name);
+                  // setSelectedDocument(doc);
+                  console.log(doc);
                   setOpen(true);
                 }}
                 title={doc.name}
@@ -140,13 +165,19 @@ export default function Dropzone() {
                 >
                   View
                 </ContextMenuItem>
+                <ContextMenuItem>Edit File Name</ContextMenuItem>
                 <ContextMenuItem
                   onClick={async () => {
-                    await deleteDocument("documents", doc.id);
+                    if (selectedFileUrl)
+                      await deleteStoredDocument(
+                        "documents",
+                        doc.id,
+                        selectedFileUrl
+                      );
                     toast("Document Deleted Successfully");
                   }}
                 >
-                  Delete
+                  Delete File
                 </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenuTrigger>
@@ -171,7 +202,18 @@ export default function Dropzone() {
                   </div>
                 )}
               </div>
-              <div className="w-[0%] bg-gray-200"></div>
+              <div className="w-[30%] bg-gray-50 p-2">
+                <div className="flex">
+                  <Label>Name:</Label>
+                  <Label>{selectedFileName}</Label>
+                </div>
+                <div className="flex">
+                  <Label>Created At</Label>
+                </div>
+                <div className="flex">
+                  <Label>Uploaded by</Label>
+                </div>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

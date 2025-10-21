@@ -56,8 +56,8 @@ export default function Landing() {
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between text-sm text-gray-600 dark:text-gray-400 px-6">
           <p>© {new Date().getFullYear()} Arkaiv. All rights reserved.</p>
           <p className="flex items-center gap-1">
-            <span className="text-red-600">🇮🇳</span> Made with 99% Caffine and
-            1% Love
+            <span className="text-red-600"></span> Made with 99% Caffine and 1%
+            Love
           </p>
         </div>
       </footer>

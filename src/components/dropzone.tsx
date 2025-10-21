@@ -202,8 +202,8 @@ export default function Dropzone() {
                   </div>
                 )}
               </div>
-              <div className="w-[30%] bg-gray-50 p-2">
-                <div className="flex">
+              <div className="w-[0%] bg-gray-50 p-2">
+                {/* <div className="flex">
                   <Label>Name:</Label>
                   <Label>{selectedFileName}</Label>
                 </div>
@@ -212,7 +212,7 @@ export default function Dropzone() {
                 </div>
                 <div className="flex">
                   <Label>Uploaded by</Label>
-                </div>
+                </div> */}
               </div>
             </div>
           </DialogContent>

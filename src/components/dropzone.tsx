@@ -21,6 +21,13 @@ import { createDocument } from "@/lib/firestore";
 import { Spinner } from "./ui/spinner";
 import { useAuth } from "@/context/AuthContext";
 
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+
 interface Document {
   id: string;
   name: string;
@@ -100,28 +107,38 @@ export default function Dropzone() {
 
       <div className="p-5 mt-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2">
         {documents.map((doc) => (
-          <div
-            key={doc.id}
-            className="relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer bg-white"
-            onDoubleClick={() => {
-              setSelectedFileUrl(doc.url);
-              setSelectedFileName(doc.name);
-              setOpen(true);
-            }}
-            title={doc.name}
-          >
-            <div className="flex-1 flex items-center justify-center w-full h-full p-3">
-              <div className="w-10 h-12 border-2 border-gray-300 bg-gray-50 flex items-center justify-center">
-                <span className="text-xs text-gray-400">PDF</span>
-              </div>
-            </div>
+          <ContextMenu key={doc.id}>
+            <ContextMenuTrigger>
+              <div
+                key={doc.id}
+                className="relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer bg-white"
+                onDoubleClick={() => {
+                  setSelectedFileUrl(doc.url);
+                  setSelectedFileName(doc.name);
+                  setOpen(true);
+                }}
+                title={doc.name}
+              >
+                <div className="flex-1 flex items-center justify-center w-full h-full p-3">
+                  <div className="w-10 h-12 border-2 border-gray-300 bg-gray-50 flex items-center justify-center">
+                    <span className="text-xs text-gray-400">PDF</span>
+                  </div>
+                </div>
 
-            <div className="w-full text-center py-2 border-t bg-gray-50 rounded-b-xl">
-              <span className="text-xs font-medium text-gray-700 truncate px-2 block">
-                {doc.name}
-              </span>
-            </div>
-          </div>
+                <div className="w-full text-center py-2 border-t bg-gray-50 rounded-b-xl">
+                  <span className="text-xs font-medium text-gray-700 truncate px-2 block">
+                    {doc.name}
+                  </span>
+                </div>
+              </div>
+              <ContextMenuContent>
+                <ContextMenuItem>Profile</ContextMenuItem>
+                <ContextMenuItem>Billing</ContextMenuItem>
+                <ContextMenuItem>Team</ContextMenuItem>
+                <ContextMenuItem>Subscription</ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenuTrigger>
+          </ContextMenu>
         ))}
 
         <Dialog open={open} onOpenChange={setOpen}>

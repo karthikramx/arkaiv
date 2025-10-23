@@ -29,9 +29,6 @@ import {
 } from "@/components/ui/context-menu";
 import { toast } from "sonner";
 import { deleteStoredDocument } from "@/services/document";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { Sree_Krushnadevaraya } from "next/font/google";
 
 interface Document {
   id: string;
@@ -39,10 +36,10 @@ interface Document {
   url: string;
 }
 
-interface Folder {
-  id: string;
-  name: string;
-}
+// interface Folder {
+//   id: string;
+//   name: string;
+// }
 
 // interface selectedDocument {
 //   id: string;
@@ -55,7 +52,7 @@ interface Folder {
 export default function Dropzone() {
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [folders, setFolders] = useState<Folder[]>([]);
+  // const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
   // const [selectedDocument, setSelectedDocument] =
   //   useState<selectedDocument | null>(null);
@@ -111,21 +108,21 @@ export default function Dropzone() {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const q = query(
-      collection(db, "folders"),
-      where("createdBy", "==", user?.uid)
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const folders = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Document, "id">),
-      }));
-      setFolders(folders);
-    });
+  // useEffect(() => {
+  //   const q = query(
+  //     collection(db, "folders"),
+  //     where("createdBy", "==", user?.uid)
+  //   );
+  //   const unsubscribe = onSnapshot(q, (snapshot) => {
+  //     const folders = snapshot.docs.map((doc) => ({
+  //       id: doc.id,
+  //       ...(doc.data() as Omit<Document, "id">),
+  //     }));
+  //     setFolders(folders);
+  //   });
 
-    return () => unsubscribe();
-  }, []);
+  //   return () => unsubscribe();
+  // }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -154,8 +151,8 @@ export default function Dropzone() {
               </div>
             )}
 
-            <div className="p-5 mt-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2">
-              {folders.map((folder) => (
+            {/* <div className="p-5 mt-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              { {folders.map((folder) => (
                 <ContextMenu key={folder.id}>
                   <ContextMenuTrigger>
                     <div
@@ -178,11 +175,18 @@ export default function Dropzone() {
                     <ContextMenuContent>
                       <ContextMenuItem>Open</ContextMenuItem>
                       <ContextMenuItem>Edit Folder Name</ContextMenuItem>
-                      <ContextMenuItem>Delete Folder</ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={async () => {
+                          await deleteDocument("folders", folder.id);
+                          toast(`Deleted Folder: ${folder.name}`);
+                        }}
+                      >
+                        Delete Folder
+                      </ContextMenuItem>
                     </ContextMenuContent>
                   </ContextMenuTrigger>
                 </ContextMenu>
-              ))}
+              ))} }
 
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent className="!max-w-screen-xl">
@@ -212,12 +216,12 @@ export default function Dropzone() {
                 </div>
                 <div className="flex">
                   <Label>Uploaded by</Label>
-                </div> */}
+                </div> }
                     </div>
                   </div>
                 </DialogContent>
               </Dialog>
-            </div>
+            </div> */}
 
             <div className="p-5 mt-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2">
               {documents.map((doc) => (
@@ -250,6 +254,8 @@ export default function Dropzone() {
                     <ContextMenuContent>
                       <ContextMenuItem
                         onClick={() => {
+                          setSelectedFileName(doc.name);
+                          setSelectedFileUrl(doc.url);
                           setOpen(true);
                         }}
                       >
@@ -315,7 +321,8 @@ export default function Dropzone() {
               onClick={async () => {
                 await createDocument("folders", {
                   name: "Untitled",
-                  parent: "home",
+                  path: "/home",
+                  parent: "null",
                   createdBy: user?.uid,
                   createdAt: serverTimestamp(),
                 });

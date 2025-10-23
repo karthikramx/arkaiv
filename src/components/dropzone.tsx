@@ -30,6 +30,20 @@ import {
 import { toast } from "sonner";
 import { deleteStoredDocument } from "@/services/document";
 
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  // SidebarGroupContent,
+  SidebarGroupLabel,
+} from "@/components/ui/sidebar";
+
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+
 interface Document {
   id: string;
   name: string;
@@ -282,35 +296,48 @@ export default function Dropzone() {
               ))}
 
               <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="!max-w-screen-xl">
-                  <DialogHeader>
-                    <DialogTitle>{selectedFileName}</DialogTitle>
+                <DialogContent className="!max-w-screen-xl !p-0 overflow-hidden">
+                  {/* Dialog Header (top bar) */}
+                  <DialogHeader className="px-6 py-4 border-b bg-white z-50 relative">
+                    <DialogTitle className="text-lg font-semibold truncate">
+                      {selectedFileName}
+                    </DialogTitle>
                   </DialogHeader>
-                  <div className="flex v-screen">
-                    <div className="w-[100%]">
-                      {selectedFileUrl && (
-                        <div className="h-[85vh]">
-                          <iframe
-                            src={selectedFileUrl}
-                            width="100%"
-                            height="100%"
-                            style={{ border: "none" }}
-                          ></iframe>
-                        </div>
-                      )}
-                    </div>
-                    <div className="w-[0%] bg-gray-50 p-2">
-                      {/* <div className="flex">
-                  <Label>Name:</Label>
-                  <Label>{selectedFileName}</Label>
-                </div>
-                <div className="flex">
-                  <Label>Created At</Label>
-                </div>
-                <div className="flex">
-                  <Label>Uploaded by</Label>
-                </div> */}
-                    </div>
+
+                  {/* Main Content Area (Iframe + Right Sidebar) */}
+                  <div className="flex h-[85vh] overflow-hidden relative">
+                    <SidebarProvider>
+                      {/* Iframe Section */}
+                      <SidebarInset className="flex-1 relative bg-gray-50 transition-all duration-300 ease-in-out">
+                        {selectedFileUrl && (
+                          <div className="w-full h-full relative pl-12">
+                            <iframe
+                              src={selectedFileUrl}
+                              className="w-full h-full relative z-10"
+                              style={{
+                                border: "none",
+                                backgroundColor: "white",
+                              }}
+                            ></iframe>
+                          </div>
+                        )}
+                      </SidebarInset>
+
+                      {/* Sidebar Section */}
+
+                      <Sidebar
+                        collapsible="icon"
+                        className="relative z-20 border-l top-7 transition-all duration-300 ease-in-out"
+                      >
+                        <SidebarTrigger className="absolute left-2.5 -top-5 z-50 bg-white shadow rounded-md" />
+                        <SidebarContent className="h-full top-10 overflow-y-auto bg-white">
+                          <SidebarGroup>
+                            <SidebarGroupLabel>Document Data</SidebarGroupLabel>
+                            {/* Sidebar items */}
+                          </SidebarGroup>
+                        </SidebarContent>
+                      </Sidebar>
+                    </SidebarProvider>
                   </div>
                 </DialogContent>
               </Dialog>

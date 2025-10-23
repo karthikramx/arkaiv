@@ -44,23 +44,23 @@ export const readDocuments = async (collectionName: string, id: string) => {
   }
 };
 
-// Update a document by ID
-export const updateDocument = async (
-  collectionName: string,
-  id: string,
-  data: Record<string, any>
-) => {
-  try {
-    const docRef = doc(db, collectionName, id);
-    await updateDoc(docRef, data);
+// // Update a document by ID
+// export const updateDocument = async (
+//   collectionName: string,
+//   id: string,
+//   data: Record<string, any>
+// ) => {
+//   try {
+//     const docRef = doc(db, collectionName, id);
+//     await updateDoc(docRef, data);
 
-    console.log(`Document ${id} updated successfully.`);
-    return true;
-  } catch (error) {
-    console.error("Error updating document:", error);
-    throw error;
-  }
-};
+//     console.log(`Document ${id} updated successfully.`);
+//     return true;
+//   } catch (error) {
+//     console.error("Error updating document:", error);
+//     throw error;
+//   }
+// };
 
 // Delete a document by id
 export const deleteDocument = async (collectionName: string, id: string) => {

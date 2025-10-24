@@ -326,7 +326,7 @@ export default function Dropzone() {
                   </DialogHeader>
 
                   {/* Main Content Area (Iframe + Right Sidebar) */}
-                  <div className="flex h-[85vh] overflow-hidden relative">
+                  <div className="flex h-[85vh] relative">
                     <SidebarProvider>
                       {/* Iframe Section */}
                       <SidebarInset className="flex-1 relative bg-gray-50 transition-all duration-300 ease-in-out">
@@ -348,7 +348,7 @@ export default function Dropzone() {
 
                       <Sidebar
                         collapsible="icon"
-                        className="relative z-20 border-l top-7 transition-all duration-1000 ease-in-out"
+                        className="relative z-20 border-l top-7 transition-all duration-300 ease-in-out "
                       >
                         <SidebarTrigger
                           className="absolute left-2.5 -top-5 z-50 bg-white shadow rounded-md"
@@ -356,7 +356,7 @@ export default function Dropzone() {
                             setCollapseMetadata(!collapseMetadata);
                           }}
                         />
-                        <SidebarContent className="h-full overflow-y-auto bg-white">
+                        <SidebarContent className="max-h-[76vh] overflow-y-auto bg-white">
                           <SidebarGroup>
                             <SidebarGroupLabel>Document Data</SidebarGroupLabel>
                             <SidebarGroupContent className="group-content-hidden">
@@ -415,7 +415,7 @@ export default function Dropzone() {
                                   placeholder="Add a description..."
                                   value={"test"}
                                   onChange={() => {}}
-                                  className="min-h-[100px] flex flex-col gap-1 text-xs text-gray-500 px-2"
+                                  className="min-h-[100px] max-h-[100px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
                                 />
                               </div>
                             )}
@@ -426,9 +426,11 @@ export default function Dropzone() {
                               <div className="px-2">
                                 <Textarea
                                   placeholder="Add a description..."
-                                  value={"test"}
+                                  value={
+                                    "test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test "
+                                  }
                                   onChange={() => {}}
-                                  className="min-h-[100px] flex flex-col gap-1 text-xs text-gray-500 px-2"
+                                  className="min-h-[100px] max-h-[100px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
                                 />
                               </div>
                             )}

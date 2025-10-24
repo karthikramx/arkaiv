@@ -298,8 +298,8 @@ export default function Dropzone() {
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent className="!max-w-screen-xl !p-0 overflow-hidden">
                   {/* Dialog Header (top bar) */}
-                  <DialogHeader className="px-6 py-4 border-b bg-white z-50 relative">
-                    <DialogTitle className="text-lg font-semibold truncate">
+                  <DialogHeader className="px-6 py-4 bg-white z-50 relative">
+                    <DialogTitle className="text-sm font-semibold truncate">
                       {selectedFileName}
                     </DialogTitle>
                   </DialogHeader>
@@ -310,7 +310,7 @@ export default function Dropzone() {
                       {/* Iframe Section */}
                       <SidebarInset className="flex-1 relative bg-gray-50 transition-all duration-300 ease-in-out">
                         {selectedFileUrl && (
-                          <div className="w-full h-full relative pl-12">
+                          <div className="w-full h-full relative pl-12 pb-50">
                             <iframe
                               src={selectedFileUrl}
                               className="w-full h-full relative z-10"

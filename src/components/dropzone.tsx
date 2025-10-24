@@ -458,7 +458,7 @@ export default function Dropzone() {
                                     <Input
                                       value={item.key}
                                       onChange={() => {}}
-                                      className="h-6 w-2/5"
+                                      className="h-6 w-2/5 mr-2"
                                     />
                                     <Input
                                       value={item.value}

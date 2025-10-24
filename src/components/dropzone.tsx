@@ -89,6 +89,9 @@ export default function Dropzone() {
   const metadata = [
     { key: "Name", value: "Tony" },
     { key: "Test", value: "Test" },
+    { key: "Test", value: "Test" },
+    { key: "Test", value: "Test" },
+    { key: "Test", value: "Test" },
   ];
 
   // const pdfData = {
@@ -413,9 +416,11 @@ export default function Dropzone() {
                               <div className="px-2">
                                 <Textarea
                                   placeholder="Add a description..."
-                                  value={"test"}
+                                  value={
+                                    "Enhanced advanced NLP-driven extraction pipelines to parse various formats of raw PDF scans containing transaction data from over 250 investment providers, significantly improving data accuracy and operational throughput.Led customer onboarding by conducting tailored demos and process consultations, increasing CSAT scores by 15%.Implemented monitoring across hundreds of endpoints and cloud jobs with Elasticsearch and Kibana, adding API instrumentation to track millions of requests, resulting in faster bug resolution and fewer customer incidents. Integrated APIs and deployed automated file workers to synchronize PDFs across destinations, saving customers thousands of hours of manual effort annually."
+                                  }
                                   onChange={() => {}}
-                                  className="min-h-[100px] max-h-[100px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
+                                  className="min-h-[90px] max-h-[90px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
                                 />
                               </div>
                             )}
@@ -427,10 +432,10 @@ export default function Dropzone() {
                                 <Textarea
                                   placeholder="Add a description..."
                                   value={
-                                    "test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test "
+                                    "Enhanced advanced NLP-driven extraction pipelines to parse various formats of raw PDF scans containing transaction data from over 250 investment providers, significantly improving data accuracy and operational throughput.Led customer onboarding by conducting tailored demos and process consultations, increasing CSAT scores by 15%.Implemented monitoring across hundreds of endpoints and cloud jobs with Elasticsearch and Kibana, adding API instrumentation to track millions of requests, resulting in faster bug resolution and fewer customer incidents. Integrated APIs and deployed automated file workers to synchronize PDFs across destinations, saving customers thousands of hours of manual effort annually."
                                   }
                                   onChange={() => {}}
-                                  className="min-h-[100px] max-h-[100px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
+                                  className="min-h-[90px] max-h-[90px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
                                 />
                               </div>
                             )}

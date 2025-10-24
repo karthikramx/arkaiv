@@ -34,7 +34,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  // SidebarGroupContent,
+  SidebarGroupContent,
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 
@@ -44,6 +44,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
+import { Textarea } from "./ui/textarea";
 interface Document {
   id: string;
   name: string;
@@ -74,6 +75,7 @@ export default function Dropzone() {
   const [open, setOpen] = useState(false);
   // const [metadata, setMetadata] = useState([]);
   const { user } = useAuth();
+  const [collapseMetadata, setCollapseMetadata] = useState(false);
 
   // const pdfData = {
   //   filename: "karthik.pdf",
@@ -327,14 +329,102 @@ export default function Dropzone() {
 
                       <Sidebar
                         collapsible="icon"
-                        className="relative z-20 border-l top-7 transition-all duration-300 ease-in-out"
+                        className="relative z-20 border-l top-7 transition-all duration-1000 ease-in-out"
                       >
-                        <SidebarTrigger className="absolute left-2.5 -top-5 z-50 bg-white shadow rounded-md" />
-                        <SidebarContent className="h-full top-10 overflow-y-auto bg-white">
+                        <SidebarTrigger
+                          className="absolute left-2.5 -top-5 z-50 bg-white shadow rounded-md"
+                          onClick={() => {
+                            setCollapseMetadata(!collapseMetadata);
+                          }}
+                        />
+                        <SidebarContent className="h-full overflow-y-auto bg-white">
                           <SidebarGroup>
                             <SidebarGroupLabel>Document Data</SidebarGroupLabel>
-                            {/* Sidebar items */}
+                            <SidebarGroupContent className="group-content-hidden">
+                              {!collapseMetadata && (
+                                <div className="flex flex-col gap-1 text-xs text-gray-500 px-2">
+                                  {/* Name */}
+                                  <div className="flex">
+                                    <span
+                                      className="font-medium"
+                                      title={selectedFileName || ""}
+                                    >
+                                      Name:
+                                    </span>
+                                    <span
+                                      className="truncate"
+                                      title={selectedFileName || ""}
+                                    >
+                                      {selectedFileName || "-"}
+                                    </span>
+                                  </div>
+
+                                  {/* Pages */}
+                                  <div className="flex flex-wrap">
+                                    <span
+                                      className="font-medium truncate"
+                                      title="Pages"
+                                    >
+                                      Pages:
+                                    </span>
+                                    <span className="truncate" title="5">
+                                      5
+                                    </span>
+                                  </div>
+
+                                  {/* Size */}
+                                  <div className="flex flex-wrap">
+                                    <span
+                                      className="font-medium truncate"
+                                      title="Size"
+                                    >
+                                      Size:
+                                    </span>
+                                    <span className="truncate" title="2 MB">
+                                      2 MB
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </SidebarGroupContent>
                           </SidebarGroup>
+                          <SidebarGroup>
+                            <SidebarGroupLabel>Description</SidebarGroupLabel>
+                            {!collapseMetadata && (
+                              <div className="px-2">
+                                <Textarea
+                                  placeholder="Add a description..."
+                                  value={"test"}
+                                  onChange={() => {}}
+                                  className="min-h-[100px] flex flex-col gap-1 text-xs text-gray-500 px-2"
+                                />
+                              </div>
+                            )}
+                          </SidebarGroup>
+                          <SidebarGroup>
+                            <SidebarGroupLabel>Summary</SidebarGroupLabel>
+                            {!collapseMetadata && (
+                              <div className="px-2">
+                                <Textarea
+                                  placeholder="Add a description..."
+                                  value={"test"}
+                                  onChange={() => {}}
+                                  className="min-h-[100px] flex flex-col gap-1 text-xs text-gray-500 px-2"
+                                />
+                              </div>
+                            )}
+                          </SidebarGroup>
+                          <SidebarGroup>
+                            <SidebarGroupLabel>Tags</SidebarGroupLabel>
+                            <div></div>
+                          </SidebarGroup>
+                          <SidebarGroup>
+                            <SidebarGroupLabel>
+                              Custom Metadata
+                            </SidebarGroupLabel>
+                            <div></div>
+                          </SidebarGroup>
+                          {/* <Button onClick={() => {}}>Save Changes</Button> */}
                         </SidebarContent>
                       </Sidebar>
                     </SidebarProvider>

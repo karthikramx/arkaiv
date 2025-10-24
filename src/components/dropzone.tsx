@@ -51,6 +51,8 @@ interface Document {
   url: string;
 }
 
+import TagSelector from "@/components/ui/tag-selector";
+
 // interface Folder {
 //   id: string;
 //   name: string;
@@ -76,6 +78,9 @@ export default function Dropzone() {
   // const [metadata, setMetadata] = useState([]);
   const { user } = useAuth();
   const [collapseMetadata, setCollapseMetadata] = useState(false);
+
+  // this will be a state, that will be read from the document
+  const allTags = ["React", "Next.js", "TypeScript", "Python"];
 
   // const pdfData = {
   //   filename: "karthik.pdf",
@@ -145,6 +150,11 @@ export default function Dropzone() {
     noClick: true,
     accept: { "application/pdf": [".pdf"] },
   });
+
+  const handleTagChange = (selected: string[]) => {
+    console.log("Selected tags:", selected);
+    // TODO: Need to update the document tags here
+  };
 
   return (
     <div className="w-full h-full">
@@ -416,7 +426,12 @@ export default function Dropzone() {
                           </SidebarGroup>
                           <SidebarGroup>
                             <SidebarGroupLabel>Tags</SidebarGroupLabel>
-                            <div></div>
+                            <div>
+                              <TagSelector
+                                tags={allTags}
+                                onChange={handleTagChange}
+                              />
+                            </div>
                           </SidebarGroup>
                           <SidebarGroup>
                             <SidebarGroupLabel>

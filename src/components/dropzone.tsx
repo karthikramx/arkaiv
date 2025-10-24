@@ -44,6 +44,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { TrashIcon } from "lucide-react";
+
 import { Textarea } from "./ui/textarea";
 interface Document {
   id: string;
@@ -75,12 +79,17 @@ export default function Dropzone() {
   //   useState<selectedDocument | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  // const [metadata, setMetadata] = useState([]);
   const { user } = useAuth();
   const [collapseMetadata, setCollapseMetadata] = useState(false);
 
   // this will be a state, that will be read from the document
   const allTags = ["React", "Next.js", "TypeScript", "Python"];
+
+  // document metadata example
+  const metadata = [
+    { key: "Name", value: "Tony" },
+    { key: "Test", value: "Test" },
+  ];
 
   // const pdfData = {
   //   filename: "karthik.pdf",
@@ -426,18 +435,55 @@ export default function Dropzone() {
                           </SidebarGroup>
                           <SidebarGroup>
                             <SidebarGroupLabel>Tags</SidebarGroupLabel>
-                            <div>
-                              <TagSelector
-                                tags={allTags}
-                                onChange={handleTagChange}
-                              />
-                            </div>
+                            {!collapseMetadata && (
+                              <div className="p-2">
+                                <TagSelector
+                                  tags={allTags}
+                                  onChange={handleTagChange}
+                                />
+                              </div>
+                            )}
                           </SidebarGroup>
                           <SidebarGroup>
                             <SidebarGroupLabel>
                               Custom Metadata
                             </SidebarGroupLabel>
-                            <div></div>
+                            {!collapseMetadata && (
+                              <div className="text-xs text-gray-500 px-2 gap-2">
+                                {metadata.map((item, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex py-1.5 items-center"
+                                  >
+                                    <Input
+                                      value={item.key}
+                                      onChange={() => {}}
+                                      className="h-6 w-2/5"
+                                    />
+                                    <Input
+                                      value={item.value}
+                                      onChange={() => {}}
+                                      className="h-6 w-3/5"
+                                    />
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => {}}
+                                      className="h-6"
+                                    >
+                                      <TrashIcon />
+                                    </Button>
+                                  </div>
+                                ))}
+                                <Button
+                                  className="h-6 w-full text-sm text-gray-500"
+                                  variant="outline"
+                                  onClick={() => {}}
+                                >
+                                  + Add Metadata Field
+                                </Button>
+                              </div>
+                            )}
                           </SidebarGroup>
                           {/* <Button onClick={() => {}}>Save Changes</Button> */}
                         </SidebarContent>

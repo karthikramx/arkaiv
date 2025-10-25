@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createDocument } from "@/lib/firestore";
+import { createDocument, updateDocument } from "@/lib/firestore";
 import { Spinner } from "./ui/spinner";
 import { useAuth } from "@/context/AuthContext";
 
@@ -47,9 +47,10 @@ import {
 
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { TrashIcon } from "lucide-react";
+import { Save, TrashIcon } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import TagSelector from "@/components/ui/tag-selector";
+import { getChangedFields } from "@/lib/utils";
 
 interface MetadataItem {
   key: string;
@@ -66,7 +67,7 @@ interface Document {
   size: string;
   summary: string;
   description: string;
-  tags: string;
+  tags: Array<string>;
   metadata: MetadataItem[];
   pageCount: number;
   createdAt: Timestamp;
@@ -82,16 +83,18 @@ export default function Dropzone() {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
     null
   );
+  const [selectedDocumentCopy, setSelectedDocumentCopy] =
+    useState<Document | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
-  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
   const [collapseMetadata, setCollapseMetadata] = useState(false);
+
+  const allTags = ["test", "test2", "test3"];
+
   // const [folders, setFolders] = useState<Folder[]>([]);
 
-  // this will be a state, that will be read from the document
-  const allTags = ["React", "Next.js", "TypeScript", "Python"];
+  // TODO: add tags to db, with team id and - each account has its own tags
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     try {
@@ -163,11 +166,6 @@ export default function Dropzone() {
     accept: { "application/pdf": [".pdf"] },
   });
 
-  const handleTagChange = (selected: string[]) => {
-    console.log("Selected tags:", selected);
-    // TODO: Need to update the document tags here
-  };
-
   return (
     <div className="w-full h-full">
       <ContextMenu>
@@ -197,9 +195,8 @@ export default function Dropzone() {
                       key={doc.id}
                       className="relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer bg-white"
                       onDoubleClick={() => {
-                        setSelectedFileUrl(doc.url); // TODO: not needed
-                        setSelectedFileName(doc.name); // TODO: not needed
                         setSelectedDocument(doc);
+                        setSelectedDocumentCopy(doc);
                         setOpen(true);
                         setCollapseMetadata(false);
                       }}
@@ -220,8 +217,8 @@ export default function Dropzone() {
                     <ContextMenuContent>
                       <ContextMenuItem
                         onClick={() => {
-                          setSelectedFileName(doc.name);
-                          setSelectedFileUrl(doc.url);
+                          setSelectedDocument(doc);
+                          setSelectedDocumentCopy(doc);
                           setOpen(true);
                         }}
                       >
@@ -252,7 +249,7 @@ export default function Dropzone() {
                   {/* Dialog Header (top bar) */}
                   <DialogHeader className="px-6 py-4 bg-white z-50 relative">
                     <DialogTitle className="text-sm font-semibold truncate">
-                      {selectedFileName}
+                      {selectedDocument?.name}
                     </DialogTitle>
                   </DialogHeader>
 
@@ -261,10 +258,10 @@ export default function Dropzone() {
                     <SidebarProvider>
                       {/* Iframe Section */}
                       <SidebarInset className="flex-1 relative bg-gray-50 transition-all duration-300 ease-in-out">
-                        {selectedFileUrl && (
+                        {selectedDocument?.url && (
                           <div className="w-full h-full relative pl-12 pb-50">
                             <iframe
-                              src={selectedFileUrl}
+                              src={selectedDocument?.url}
                               className="w-full h-full relative z-10"
                               style={{
                                 border: "none",
@@ -287,6 +284,30 @@ export default function Dropzone() {
                             setCollapseMetadata(!collapseMetadata);
                           }}
                         />
+                        {!collapseMetadata &&
+                          selectedDocument !== selectedDocumentCopy && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="absolute shadow right-1 -top-5 z-50 border-none"
+                              onClick={() => {
+                                const changes = getChangedFields(
+                                  selectedDocumentCopy,
+                                  selectedDocument
+                                );
+                                if (selectedDocument) {
+                                  updateDocument(
+                                    "documents",
+                                    selectedDocument?.id,
+                                    changes
+                                  );
+                                  toast("Changes Saved");
+                                }
+                              }}
+                            >
+                              <Save />
+                            </Button>
+                          )}
                         <SidebarContent className="max-h-[76vh] overflow-y-auto bg-white">
                           <SidebarGroup>
                             <SidebarGroupLabel>Document Data</SidebarGroupLabel>
@@ -366,8 +387,15 @@ export default function Dropzone() {
                               <div className="px-2">
                                 <Textarea
                                   placeholder="Add a description..."
-                                  value={selectedDocument?.description}
-                                  onChange={() => {}}
+                                  value={selectedDocument?.description || ""}
+                                  onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    if (!selectedDocument) return;
+                                    setSelectedDocument({
+                                      ...selectedDocument,
+                                      description: newValue,
+                                    });
+                                  }}
                                   className="min-h-[90px] max-h-[90px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
                                 />
                               </div>
@@ -379,8 +407,15 @@ export default function Dropzone() {
                               <div className="px-2">
                                 <Textarea
                                   placeholder="Add a summary..."
-                                  value={selectedDocument?.description}
-                                  onChange={() => {}}
+                                  value={selectedDocument?.summary}
+                                  onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    if (!selectedDocument) return;
+                                    setSelectedDocument({
+                                      ...selectedDocument,
+                                      summary: newValue,
+                                    });
+                                  }}
                                   className="min-h-[90px] max-h-[90px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
                                 />
                               </div>
@@ -392,7 +427,14 @@ export default function Dropzone() {
                               <div className="p-2">
                                 <TagSelector
                                   tags={allTags}
-                                  onChange={handleTagChange}
+                                  existing={selectedDocument?.tags || []}
+                                  onChange={(newTags) => {
+                                    if (!selectedDocument) return;
+                                    setSelectedDocument({
+                                      ...selectedDocument,
+                                      tags: newTags,
+                                    });
+                                  }}
                                 />
                               </div>
                             )}
@@ -442,7 +484,6 @@ export default function Dropzone() {
                               </div>
                             )}
                           </SidebarGroup>
-                          {/* <Button onClick={() => {}}>Save Changes</Button> */}
                         </SidebarContent>
                       </Sidebar>
                     </SidebarProvider>

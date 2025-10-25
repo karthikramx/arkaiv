@@ -12,14 +12,19 @@ import {
   TagsValue,
 } from "@/components/ui/shadcn-io/tags";
 import { CheckIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface TagSelectorProps {
   tags: string[]; // List of tag strings
+  existing: string[];
   onChange?: (selected: string[]) => void;
 }
 
-export default function TagSelector({ tags, onChange }: TagSelectorProps) {
+export default function TagSelector({
+  tags,
+  existing,
+  onChange,
+}: TagSelectorProps) {
   const [selected, setSelected] = useState<string[]>([]);
 
   const handleRemove = (value: string) => {
@@ -29,6 +34,10 @@ export default function TagSelector({ tags, onChange }: TagSelectorProps) {
       return updated;
     });
   };
+
+  useEffect(() => {
+    setSelected(existing);
+  }, []);
 
   const handleSelect = (value: string) => {
     setSelected((prev) => {

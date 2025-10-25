@@ -8,6 +8,7 @@ import {
   query,
   onSnapshot,
   where,
+  Timestamp,
 } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
 import { useDropzone } from "react-dropzone";
@@ -47,57 +48,50 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { TrashIcon } from "lucide-react";
-
 import { Textarea } from "./ui/textarea";
+import TagSelector from "@/components/ui/tag-selector";
+
+interface MetadataItem {
+  key: string;
+  value: string;
+}
+
 interface Document {
   id: string;
   name: string;
   url: string;
+  uploadedBy: string;
+  uploadedByName: string;
+  uploadedByEmail: string;
+  size: string;
+  summary: string;
+  description: string;
+  tags: string;
+  metadata: MetadataItem[];
+  pageCount: number;
+  createdAt: Timestamp;
 }
-
-import TagSelector from "@/components/ui/tag-selector";
 
 // interface Folder {
 //   id: string;
 //   name: string;
 // }
 
-// interface selectedDocument {
-//   id: string;
-//   name: string;
-//   url: string;
-//   createdAt: Timestamp;
-//   uploadedBy: string;
-// }
-
 export default function Dropzone() {
   const [uploading, setUploading] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null
+  );
   const [documents, setDocuments] = useState<Document[]>([]);
-  // const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
-  // const [selectedDocument, setSelectedDocument] =
-  //   useState<selectedDocument | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
   const [collapseMetadata, setCollapseMetadata] = useState(false);
+  // const [folders, setFolders] = useState<Folder[]>([]);
 
   // this will be a state, that will be read from the document
   const allTags = ["React", "Next.js", "TypeScript", "Python"];
-
-  // document metadata example
-  const metadata = [
-    { key: "Name", value: "Tony" },
-    { key: "Test", value: "Test" },
-    { key: "Test", value: "Test" },
-    { key: "Test", value: "Test" },
-    { key: "Test", value: "Test" },
-  ];
-
-  // const pdfData = {
-  //   filename: "karthik.pdf",
-  //   page: 10,
-  // };
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     try {
@@ -113,8 +107,14 @@ export default function Dropzone() {
           name: file.name,
           url,
           uploadedBy: user?.uid,
+          uploadedByName: user?.displayName,
+          uploadedByEmail: user?.email,
           size: fileSizeInMB,
+          summary: "",
+          description: "",
+          tags: [],
           metadata: [],
+          pageCount: 0,
           createdAt: serverTimestamp(), // May have a UTC
         });
       }
@@ -189,78 +189,6 @@ export default function Dropzone() {
               </div>
             )}
 
-            {/* <div className="p-5 mt-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2">
-              { {folders.map((folder) => (
-                <ContextMenu key={folder.id}>
-                  <ContextMenuTrigger>
-                    <div
-                      key={folder.id}
-                      className="bg-blue-100 relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
-                      title={folder.name}
-                    >
-                      <div className="flex-1 flex items-center justify-center w-full h-full p-3">
-                        <div>
-                          <span className="text-xs text-gray-400">FOLDER</span>
-                        </div>
-                      </div>
-
-                      <div className="w-full text-center py-2 border-t bg-gray-50">
-                        <span className="text-xs font-medium text-gray-700 truncate px-2 block">
-                          {folder.name}
-                        </span>
-                      </div>
-                    </div>
-                    <ContextMenuContent>
-                      <ContextMenuItem>Open</ContextMenuItem>
-                      <ContextMenuItem>Edit Folder Name</ContextMenuItem>
-                      <ContextMenuItem
-                        onClick={async () => {
-                          await deleteDocument("folders", folder.id);
-                          toast(`Deleted Folder: ${folder.name}`);
-                        }}
-                      >
-                        Delete Folder
-                      </ContextMenuItem>
-                    </ContextMenuContent>
-                  </ContextMenuTrigger>
-                </ContextMenu>
-              ))} }
-
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="!max-w-screen-xl">
-                  <DialogHeader>
-                    <DialogTitle>{selectedFileName}</DialogTitle>
-                  </DialogHeader>
-                  <div className="flex v-screen">
-                    <div className="w-[100%]">
-                      {selectedFileUrl && (
-                        <div className="h-[85vh]">
-                          <iframe
-                            src={selectedFileUrl}
-                            width="100%"
-                            height="100%"
-                            style={{ border: "none" }}
-                          ></iframe>
-                        </div>
-                      )}
-                    </div>
-                    <div className="w-[0%] bg-gray-50 p-2">
-                      {/* <div className="flex">
-                  <Label>Name:</Label>
-                  <Label>{selectedFileName}</Label>
-                </div>
-                <div className="flex">
-                  <Label>Created At</Label>
-                </div>
-                <div className="flex">
-                  <Label>Uploaded by</Label>
-                </div> }
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div> */}
-
             <div className="p-5 mt-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2">
               {documents.map((doc) => (
                 <ContextMenu key={doc.id}>
@@ -269,11 +197,11 @@ export default function Dropzone() {
                       key={doc.id}
                       className="relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer bg-white"
                       onDoubleClick={() => {
-                        setSelectedFileUrl(doc.url);
-                        setSelectedFileName(doc.name);
-                        // setSelectedDocument(doc);
-                        console.log(doc);
+                        setSelectedFileUrl(doc.url); // TODO: not needed
+                        setSelectedFileName(doc.name); // TODO: not needed
+                        setSelectedDocument(doc);
                         setOpen(true);
+                        setCollapseMetadata(false);
                       }}
                       title={doc.name}
                     >
@@ -367,43 +295,65 @@ export default function Dropzone() {
                                 <div className="flex flex-col gap-1 text-xs text-gray-500 px-2">
                                   {/* Name */}
                                   <div className="flex">
-                                    <span
-                                      className="font-medium"
-                                      title={selectedFileName || ""}
-                                    >
-                                      Name:
-                                    </span>
+                                    <span className="font-medium">Name:</span>
                                     <span
                                       className="truncate"
-                                      title={selectedFileName || ""}
+                                      title={selectedDocument?.name || ""}
                                     >
-                                      {selectedFileName || "-"}
+                                      {selectedDocument?.name || "-"}
                                     </span>
                                   </div>
 
                                   {/* Pages */}
                                   <div className="flex flex-wrap">
-                                    <span
-                                      className="font-medium truncate"
-                                      title="Pages"
-                                    >
+                                    <span className="font-medium truncate">
                                       Pages:
                                     </span>
-                                    <span className="truncate" title="5">
-                                      5
+                                    <span
+                                      className="truncate"
+                                      title={selectedDocument?.pageCount.toString()}
+                                    >
+                                      {selectedDocument?.pageCount}
                                     </span>
                                   </div>
 
                                   {/* Size */}
                                   <div className="flex flex-wrap">
-                                    <span
-                                      className="font-medium truncate"
-                                      title="Size"
-                                    >
+                                    <span className="font-medium truncate">
                                       Size:
                                     </span>
-                                    <span className="truncate" title="2 MB">
-                                      2 MB
+                                    <span className="truncate">
+                                      {selectedDocument?.size} MB
+                                    </span>
+                                  </div>
+
+                                  {/* Uploaded By Name */}
+                                  <div className="flex flex-wrap">
+                                    <span className="font-medium truncate">
+                                      Uploaded By:
+                                    </span>
+                                    <span
+                                      className="truncate"
+                                      title={selectedDocument?.uploadedByName}
+                                    >
+                                      {selectedDocument?.uploadedByName}
+                                    </span>
+                                  </div>
+
+                                  {/* Created At */}
+                                  <div className="flex flex-wrap">
+                                    <span className="font-medium truncate">
+                                      Created At:
+                                    </span>
+                                    <span
+                                      className="truncate"
+                                      title={selectedDocument?.createdAt
+                                        .toDate()
+                                        .toDateString()}
+                                    >
+                                      {selectedDocument?.createdAt
+                                        .toDate()
+                                        .toDateString()}
                                     </span>
                                   </div>
                                 </div>
@@ -416,9 +366,7 @@ export default function Dropzone() {
                               <div className="px-2">
                                 <Textarea
                                   placeholder="Add a description..."
-                                  value={
-                                    "Enhanced advanced NLP-driven extraction pipelines to parse various formats of raw PDF scans containing transaction data from over 250 investment providers, significantly improving data accuracy and operational throughput.Led customer onboarding by conducting tailored demos and process consultations, increasing CSAT scores by 15%.Implemented monitoring across hundreds of endpoints and cloud jobs with Elasticsearch and Kibana, adding API instrumentation to track millions of requests, resulting in faster bug resolution and fewer customer incidents. Integrated APIs and deployed automated file workers to synchronize PDFs across destinations, saving customers thousands of hours of manual effort annually."
-                                  }
+                                  value={selectedDocument?.description}
                                   onChange={() => {}}
                                   className="min-h-[90px] max-h-[90px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
                                 />
@@ -430,10 +378,8 @@ export default function Dropzone() {
                             {!collapseMetadata && (
                               <div className="px-2">
                                 <Textarea
-                                  placeholder="Add a description..."
-                                  value={
-                                    "Enhanced advanced NLP-driven extraction pipelines to parse various formats of raw PDF scans containing transaction data from over 250 investment providers, significantly improving data accuracy and operational throughput.Led customer onboarding by conducting tailored demos and process consultations, increasing CSAT scores by 15%.Implemented monitoring across hundreds of endpoints and cloud jobs with Elasticsearch and Kibana, adding API instrumentation to track millions of requests, resulting in faster bug resolution and fewer customer incidents. Integrated APIs and deployed automated file workers to synchronize PDFs across destinations, saving customers thousands of hours of manual effort annually."
-                                  }
+                                  placeholder="Add a summary..."
+                                  value={selectedDocument?.description}
                                   onChange={() => {}}
                                   className="min-h-[90px] max-h-[90px] overflow-y-auto flex flex-col gap-1 text-xs text-gray-500 px-2 "
                                 />
@@ -457,35 +403,39 @@ export default function Dropzone() {
                             </SidebarGroupLabel>
                             {!collapseMetadata && (
                               <div className="text-xs text-gray-500 px-2 gap-2">
-                                {metadata.map((item, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex py-1.5 items-center"
-                                  >
-                                    <Input
-                                      value={item.key}
-                                      onChange={() => {}}
-                                      className="h-6 w-2/5 mr-2"
-                                    />
-                                    <Input
-                                      value={item.value}
-                                      onChange={() => {}}
-                                      className="h-6 w-3/5"
-                                    />
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      onClick={() => {}}
-                                      className="h-6"
+                                {selectedDocument?.metadata.map(
+                                  (item, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex py-1.5 items-center"
                                     >
-                                      <TrashIcon />
-                                    </Button>
-                                  </div>
-                                ))}
+                                      <Input
+                                        value={item.key}
+                                        onChange={() => {}}
+                                        className="h-6 w-2/5 mr-2"
+                                      />
+                                      <Input
+                                        value={item.value}
+                                        onChange={() => {}}
+                                        className="h-6 w-3/5"
+                                      />
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => {}}
+                                        className="h-6"
+                                      >
+                                        <TrashIcon />
+                                      </Button>
+                                    </div>
+                                  )
+                                )}
                                 <Button
                                   className="h-6 w-full text-sm text-gray-500"
                                   variant="outline"
-                                  onClick={() => {}}
+                                  onClick={() => {
+                                    console.log(user);
+                                  }}
                                 >
                                   + Add Metadata Field
                                 </Button>
@@ -522,4 +472,79 @@ export default function Dropzone() {
       </ContextMenu>
     </div>
   );
+}
+
+// folder logic!
+{
+  /* <div className="p-5 mt-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              { {folders.map((folder) => (
+                <ContextMenu key={folder.id}>
+                  <ContextMenuTrigger>
+                    <div
+                      key={folder.id}
+                      className="bg-blue-100 relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
+                      title={folder.name}
+                    >
+                      <div className="flex-1 flex items-center justify-center w-full h-full p-3">
+                        <div>
+                          <span className="text-xs text-gray-400">FOLDER</span>
+                        </div>
+                      </div>
+
+                      <div className="w-full text-center py-2 border-t bg-gray-50">
+                        <span className="text-xs font-medium text-gray-700 truncate px-2 block">
+                          {folder.name}
+                        </span>
+                      </div>
+                    </div>
+                    <ContextMenuContent>
+                      <ContextMenuItem>Open</ContextMenuItem>
+                      <ContextMenuItem>Edit Folder Name</ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={async () => {
+                          await deleteDocument("folders", folder.id);
+                          toast(`Deleted Folder: ${folder.name}`);
+                        }}
+                      >
+                        Delete Folder
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenuTrigger>
+                </ContextMenu>
+              ))} }
+
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="!max-w-screen-xl">
+                  <DialogHeader>
+                    <DialogTitle>{selectedFileName}</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex v-screen">
+                    <div className="w-[100%]">
+                      {selectedFileUrl && (
+                        <div className="h-[85vh]">
+                          <iframe
+                            src={selectedFileUrl}
+                            width="100%"
+                            height="100%"
+                            style={{ border: "none" }}
+                          ></iframe>
+                        </div>
+                      )}
+                    </div>
+                    <div className="w-[0%] bg-gray-50 p-2">
+                      {/* <div className="flex">
+                  <Label>Name:</Label>
+                  <Label>{selectedFileName}</Label>
+                </div>
+                <div className="flex">
+                  <Label>Created At</Label>
+                </div>
+                <div className="flex">
+                  <Label>Uploaded by</Label>
+                </div> }
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div> */
 }

@@ -1,5 +1,5 @@
 import { useParams } from "next/navigation";
 
 export default function DocumentsPort() {
-  return <div>These are the documents</div>;
+  return <div>This is a direct render of the document</div>;
 }

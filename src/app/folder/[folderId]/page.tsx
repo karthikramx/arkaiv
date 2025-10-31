@@ -2,12 +2,14 @@
 import ContextMenuComponent from "@/components/contextmenu";
 import { useParams } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
-import { User, Folder, Team, Document } from "@/interfaces";
+import { User, Folder, Document } from "@/interfaces";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useDropzone } from "react-dropzone";
 import { useTeam } from "@/context/TeamContext";
 import { useAuth } from "@/context/AuthContext";
+import { deleteStoredDocument } from "@/services/document";
+import DocumentViewPort from "./(.)document/[documentId]/page";
 
 // Firebase and Firestore imports
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -19,18 +21,15 @@ import {
   where,
 } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
-import {
-  createDocument,
-  updateDocument,
-  deleteDocument,
-} from "@/lib/firestore";
+import { createDocument, deleteDocument } from "@/lib/firestore";
 
-export default function FoldersPort() {
+export default function FoldersViewPort() {
   const params = useParams();
   const folderId = params.folderId as string;
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
+
   const [open, setOpen] = useState(false);
   const [collapseMetadata, setCollapseMetadata] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
@@ -40,6 +39,21 @@ export default function FoldersPort() {
     useState<Document | null>(null);
   const { user } = useAuth();
   const { userDoc }: { userDoc: User | null } = useTeam();
+
+  // close modal on browser navigation (back/forward) when URL no longer contains /document/
+  useEffect(() => {
+    const handler = () => {
+      if (typeof window === "undefined") return;
+      const path = window.location.pathname;
+      if (!path.includes("/document/")) {
+        setOpen(false);
+        setSelectedDocument(null);
+        setSelectedDocumentCopy(null);
+      }
+    };
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, []);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -80,7 +94,7 @@ export default function FoldersPort() {
         setUploading(false);
       }
     },
-    [userDoc, user]
+    [userDoc, user, folderId]
   );
 
   useEffect(() => {
@@ -115,7 +129,7 @@ export default function FoldersPort() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user?.uid]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -137,6 +151,20 @@ export default function FoldersPort() {
 
   const deleteFolder = async (folderId: string) => {
     await deleteDocument("folders", folderId);
+  };
+
+  // File level functions
+  const viewFile = (doc: Document) => {
+    setSelectedDocument(doc);
+    setSelectedDocumentCopy(doc);
+    setOpen(true);
+  };
+
+  const deleteFile = async (doc: Document) => {
+    if (doc.url) {
+      await deleteStoredDocument("documents", doc.id, doc.url);
+      toast("Document Deleted Successfully");
+    }
   };
 
   return (
@@ -211,10 +239,10 @@ export default function FoldersPort() {
               <ContextMenuComponent
                 key={doc.id}
                 items={[
-                  { label: "View File", onClick: async () => createNewFolder },
+                  { label: "View File", onClick: () => viewFile(doc) },
                   {
                     label: "Delete File",
-                    onClick: () => console.log("Delete clicked"),
+                    onClick: async () => deleteFile(doc),
                   },
                   {
                     label: "Share",
@@ -226,10 +254,19 @@ export default function FoldersPort() {
                   key={doc.id}
                   className="relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer bg-white"
                   onDoubleClick={() => {
+                    // open modal locally and update the URL without navigating away
                     setSelectedDocument(doc);
                     setSelectedDocumentCopy(doc);
                     setOpen(true);
                     setCollapseMetadata(false);
+                    // push URL so it shows the document route but keep current page (no full navigation)
+                    if (typeof window !== "undefined") {
+                      window.history.pushState(
+                        {},
+                        "",
+                        `/folder/${folderId}/document/${doc.id}`
+                      );
+                    }
                   }}
                   title={doc.name}
                 >
@@ -245,38 +282,30 @@ export default function FoldersPort() {
                     </span>
                   </div>
                 </div>
-                {/* <ContextMenuContent>
-                      <ContextMenuItem
-                        onClick={() => {
-                          setSelectedDocument(doc);
-                          setSelectedDocumentCopy(doc);
-                          setOpen(true);
-                        }}
-                      >
-                        View
-                      </ContextMenuItem>
-                      <ContextMenuItem>Edit File Name</ContextMenuItem>
-                      <ContextMenuItem
-                        onClick={async () => {
-                          if (doc.url) {
-                            await deleteStoredDocument(
-                              "documents",
-                              doc.id,
-                              doc.url
-                            );
-                            toast("Document Deleted Successfully");
-                          }
-                        }}
-                      >
-                        Delete File
-                      </ContextMenuItem>
-                    </ContextMenuContent>
-                  </ContextMenuTrigger> */}
               </ContextMenuComponent>
             ))}
           </div>
         </div>
       </ContextMenuComponent>
+      {/* Modal (controlled) - renders as overlay in this page and keeps the URL in sync */}
+      <DocumentViewPort
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+          // when the modal closes, restore the folder-only URL
+          if (!o && typeof window !== "undefined") {
+            window.history.pushState({}, "", `/folder/${folderId}`);
+            setSelectedDocument(null);
+            setSelectedDocumentCopy(null);
+          }
+        }}
+        selectedDocument={selectedDocument}
+        setSelectedDocument={setSelectedDocument}
+        selectedDocumentCopy={selectedDocumentCopy}
+        setSelectedDocumentCopy={setSelectedDocumentCopy}
+        collapseMetadata={collapseMetadata}
+        setCollapseMetadata={setCollapseMetadata}
+      />
     </div>
   );
 }

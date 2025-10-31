@@ -17,7 +17,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createDocument, updateDocument } from "@/lib/firestore";
+import {
+  createDocument,
+  updateDocument,
+  deleteDocument,
+} from "@/lib/firestore";
 import { Spinner } from "./ui/spinner";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "./ui/input";
@@ -56,10 +60,10 @@ import { Document } from "@/interfaces";
 import { User } from "@/interfaces";
 import { useTeam } from "@/context/TeamContext";
 
-// interface Folder {
-//   id: string;
-//   name: string;
-// }
+interface Folder {
+  id: string;
+  name: string;
+}
 
 export default function Dropzone() {
   const [uploading, setUploading] = useState(false);
@@ -73,11 +77,10 @@ export default function Dropzone() {
   const [collapseMetadata, setCollapseMetadata] = useState(false);
   const { user } = useAuth();
   const { userDoc }: { userDoc: User | null } = useTeam();
+  const [folders, setFolders] = useState<Folder[]>([]);
   // const [userDoc, setUserDoc] = useState<User | null>(null);
 
   const allTags = ["test", "test2", "test3"];
-
-  // const [folders, setFolders] = useState<Folder[]>([]);
 
   // TODO: add tags to db, with team id and - each account has its own tags
 
@@ -140,43 +143,21 @@ export default function Dropzone() {
     return () => unsubscribe();
   }, [userDoc]);
 
-  // useEffect(() => {
-  //   if (!user?.uid) return; // safeguard in case user is null
+  useEffect(() => {
+    const q = query(
+      collection(db, "folders"),
+      where("createdBy", "==", user?.uid)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const folders = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Document, "id">),
+      }));
+      setFolders(folders);
+    });
 
-  //   const q = query(collection(db, "users"), where("userId", "==", user.uid));
-
-  //   const unsubscribe = onSnapshot(q, (snapshot) => {
-  //     if (!snapshot.empty) {
-  //       const doc = snapshot.docs[0];
-  //       const userDoc: User = {
-  //         id: doc.id,
-  //         ...(doc.data() as Omit<User, "id">),
-  //       };
-
-  //       setUserDoc(userDoc);
-  //     } else {
-  //       setUserDoc(null);
-  //     }
-  //   });
-
-  //   return () => unsubscribe();
-  // }, []);
-
-  // useEffect(() => {
-  //   const q = query(
-  //     collection(db, "folders"),
-  //     where("createdBy", "==", user?.uid)
-  //   );
-  //   const unsubscribe = onSnapshot(q, (snapshot) => {
-  //     const folders = snapshot.docs.map((doc) => ({
-  //       id: doc.id,
-  //       ...(doc.data() as Omit<Document, "id">),
-  //     }));
-  //     setFolders(folders);
-  //   });
-
-  //   return () => unsubscribe();
-  // }, []);
+    return () => unsubscribe();
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -205,7 +186,45 @@ export default function Dropzone() {
               </div>
             )}
 
-            <div className="p-5 mt-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            <div className="p-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-5">
+              {folders.map((folder) => (
+                <ContextMenu key={folder.id}>
+                  <ContextMenuTrigger>
+                    <div
+                      key={folder.id}
+                      className="bg-blue-100 relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
+                      title={folder.name}
+                    >
+                      <div className="flex-1 flex items-center justify-center w-full h-full p-3">
+                        <div>
+                          <span className="text-xs text-gray-400">FOLDER</span>
+                        </div>
+                      </div>
+
+                      <div className="w-full text-center py-2 border-t bg-gray-50">
+                        <span className="text-xs font-medium text-gray-700 truncate px-2 block">
+                          {folder.name}
+                        </span>
+                      </div>
+                    </div>
+                    <ContextMenuContent>
+                      <ContextMenuItem>Open</ContextMenuItem>
+                      <ContextMenuItem>Edit Folder Name</ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={async () => {
+                          await deleteDocument("folders", folder.id);
+                          toast(`Deleted Folder: ${folder.name}`);
+                        }}
+                      >
+                        Delete Folder
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenuTrigger>
+                </ContextMenu>
+              ))}
+            </div>
+
+            <div className="p-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-5">
               {documents.map((doc) => (
                 <ContextMenu key={doc.id}>
                   <ContextMenuTrigger>
@@ -523,8 +542,9 @@ export default function Dropzone() {
               onClick={async () => {
                 await createDocument("folders", {
                   name: "Untitled",
-                  path: "/home",
-                  parent: "null",
+                  path: "",
+                  parent: "",
+                  teamId: userDoc?.currentTeam,
                   createdBy: user?.uid,
                   createdAt: serverTimestamp(),
                 });
@@ -539,79 +559,4 @@ export default function Dropzone() {
       </ContextMenu>
     </div>
   );
-}
-
-// folder logic!
-{
-  /* <div className="p-5 mt-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-2">
-              { {folders.map((folder) => (
-                <ContextMenu key={folder.id}>
-                  <ContextMenuTrigger>
-                    <div
-                      key={folder.id}
-                      className="bg-blue-100 relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
-                      title={folder.name}
-                    >
-                      <div className="flex-1 flex items-center justify-center w-full h-full p-3">
-                        <div>
-                          <span className="text-xs text-gray-400">FOLDER</span>
-                        </div>
-                      </div>
-
-                      <div className="w-full text-center py-2 border-t bg-gray-50">
-                        <span className="text-xs font-medium text-gray-700 truncate px-2 block">
-                          {folder.name}
-                        </span>
-                      </div>
-                    </div>
-                    <ContextMenuContent>
-                      <ContextMenuItem>Open</ContextMenuItem>
-                      <ContextMenuItem>Edit Folder Name</ContextMenuItem>
-                      <ContextMenuItem
-                        onClick={async () => {
-                          await deleteDocument("folders", folder.id);
-                          toast(`Deleted Folder: ${folder.name}`);
-                        }}
-                      >
-                        Delete Folder
-                      </ContextMenuItem>
-                    </ContextMenuContent>
-                  </ContextMenuTrigger>
-                </ContextMenu>
-              ))} }
-
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="!max-w-screen-xl">
-                  <DialogHeader>
-                    <DialogTitle>{selectedFileName}</DialogTitle>
-                  </DialogHeader>
-                  <div className="flex v-screen">
-                    <div className="w-[100%]">
-                      {selectedFileUrl && (
-                        <div className="h-[85vh]">
-                          <iframe
-                            src={selectedFileUrl}
-                            width="100%"
-                            height="100%"
-                            style={{ border: "none" }}
-                          ></iframe>
-                        </div>
-                      )}
-                    </div>
-                    <div className="w-[0%] bg-gray-50 p-2">
-                      {/* <div className="flex">
-                  <Label>Name:</Label>
-                  <Label>{selectedFileName}</Label>
-                </div>
-                <div className="flex">
-                  <Label>Created At</Label>
-                </div>
-                <div className="flex">
-                  <Label>Uploaded by</Label>
-                </div> }
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div> */
 }

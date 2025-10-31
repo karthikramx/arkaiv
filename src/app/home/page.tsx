@@ -57,10 +57,8 @@ export default function Home() {
               </Breadcrumb>
             </div>
           </header>
-          <div className="h-full bg-gray-75 sm:p-8">
-            <div className="w-full h-full flex flex-col">
-              <Dropzone></Dropzone>
-            </div>
+          <div className="w-full h-full flex flex-col">
+            <Dropzone></Dropzone>
           </div>
         </SidebarInset>
       </SidebarProvider>

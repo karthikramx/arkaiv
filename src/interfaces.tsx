@@ -62,3 +62,8 @@ export interface Team {
   imageUrl: string;
   createdAt: Date;
 }
+// Folder Interface
+export interface Folder {
+  id: string;
+  name: string;
+}

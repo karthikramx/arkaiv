@@ -51,25 +51,29 @@ export default function Page() {
                 const response = await signup(email, password, userName);
                 if (response.user) {
                   toast("Sign up successful!");
-                  // Creating new user in the users collections
-                  createDocument("users", {
-                    name: userName,
-                    userId: response?.user?.uid,
-                    email: email,
+
+                  // creating default team for each user
+                  const teamId = await createDocument("teams", {
+                    name: "My Archive", // self team
+                    createdById: response?.user?.uid,
+                    createdByEmail: response?.user?.email,
+                    type: "self",
+                    order: 0,
+                    plan: "free",
                     imageUrl: "",
-                    accountType: "",
-                    plan: "",
-                    teams: [{ teamId: "default", role: "admin" }],
                     createdAt: serverTimestamp(),
                   });
 
-                  // creating default team for each user
-                  createDocument("teams", {
-                    name: "My Archive",
+                  // Creating new user in the users collections
+                  await createDocument("users", {
+                    name: userName,
                     userId: response?.user?.uid,
-                    type: "",
-                    order: 0,
+                    email: email,
+                    avatar: "",
+                    accountType: "",
                     plan: "",
+                    cuurentTeam: teamId,
+                    teams: [{ teamId: teamId, role: "admin" }],
                     createdAt: serverTimestamp(),
                   });
 

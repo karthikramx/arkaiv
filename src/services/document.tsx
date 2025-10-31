@@ -20,5 +20,3 @@ export async function deleteStoredDocument(
     console.log("Error deleting file or document:", error);
   }
 }
-
-// Update Document

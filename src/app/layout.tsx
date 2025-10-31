@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 import Navbar from "@/components/navbar";
+import { TeamProvider } from "@/context/TeamContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,8 +33,10 @@ export default function RootLayout({
       >
         <div className="flex flex-col h-screen overflow-hidden">
           <AuthProvider>
-            <Navbar />
-            {children}
+            <TeamProvider>
+              <Navbar />
+              {children}
+            </TeamProvider>
           </AuthProvider>
         </div>
         <Toaster position="top-center"></Toaster>

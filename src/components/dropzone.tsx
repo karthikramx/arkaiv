@@ -8,7 +8,6 @@ import {
   query,
   onSnapshot,
   where,
-  Timestamp,
 } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
 import { useDropzone } from "react-dropzone";
@@ -21,6 +20,8 @@ import {
 import { createDocument, updateDocument } from "@/lib/firestore";
 import { Spinner } from "./ui/spinner";
 import { useAuth } from "@/context/AuthContext";
+import { Input } from "./ui/input";
+import { TrashIcon } from "lucide-react";
 
 import {
   ContextMenu,
@@ -45,33 +46,15 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Save, TrashIcon } from "lucide-react";
+import { Save } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import TagSelector from "@/components/ui/tag-selector";
 import { getChangedFields } from "@/lib/utils";
 
-interface MetadataItem {
-  key: string;
-  value: string;
-}
-
-interface Document {
-  id: string;
-  name: string;
-  url: string;
-  uploadedBy: string;
-  uploadedByName: string;
-  uploadedByEmail: string;
-  size: string;
-  summary: string;
-  description: string;
-  tags: Array<string>;
-  metadata: MetadataItem[];
-  pageCount: number;
-  createdAt: Timestamp;
-}
+import { Document } from "@/interfaces";
+import { User } from "@/interfaces";
+import { useTeam } from "@/context/TeamContext";
 
 // interface Folder {
 //   id: string;
@@ -87,8 +70,10 @@ export default function Dropzone() {
     useState<Document | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
   const [collapseMetadata, setCollapseMetadata] = useState(false);
+  const { user } = useAuth();
+  const { userDoc }: { userDoc: User | null } = useTeam();
+  // const [userDoc, setUserDoc] = useState<User | null>(null);
 
   const allTags = ["test", "test2", "test3"];
 
@@ -96,42 +81,53 @@ export default function Dropzone() {
 
   // TODO: add tags to db, with team id and - each account has its own tags
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    try {
-      setUploading(true);
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      try {
+        if (!userDoc?.currentTeam) {
+          toast("Erro Uploading Document - Please Contact Support!");
+          return;
+        }
 
-      for (const file of acceptedFiles) {
-        const fileRef = ref(storage, `documents/${file.name}`);
-        await uploadBytes(fileRef, file);
-        const url = await getDownloadURL(fileRef);
-        const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(2); // file size calc - MB
+        setUploading(true);
 
-        createDocument("documents", {
-          name: file.name,
-          url,
-          uploadedBy: user?.uid,
-          uploadedByName: user?.displayName,
-          uploadedByEmail: user?.email,
-          size: fileSizeInMB,
-          summary: "",
-          description: "",
-          tags: [],
-          metadata: [],
-          pageCount: 0,
-          createdAt: serverTimestamp(), // May have a UTC
-        });
+        for (const file of acceptedFiles) {
+          const fileRef = ref(storage, `documents/${file.name}`);
+          await uploadBytes(fileRef, file);
+          const url = await getDownloadURL(fileRef);
+          const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(2); // file size calc - MB
+
+          createDocument("documents", {
+            name: file.name,
+            url,
+            uploadedBy: user?.uid,
+            uploadedByName: user?.displayName,
+            uploadedByEmail: user?.email,
+            team: userDoc.currentTeam,
+            size: fileSizeInMB,
+            summary: "",
+            description: "",
+            tags: [],
+            metadata: [],
+            pageCount: 0,
+            createdAt: serverTimestamp(), // May have a UTC
+          });
+        }
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      } finally {
+        setUploading(false);
       }
-    } catch (error) {
-      console.error("Error uploading file:", error);
-    } finally {
-      setUploading(false);
-    }
-  }, []);
+    },
+    [userDoc, user]
+  );
 
   useEffect(() => {
+    if (!userDoc?.currentTeam) return;
+
     const q = query(
       collection(db, "documents"),
-      where("uploadedBy", "==", user?.uid)
+      where("team", "==", userDoc?.currentTeam)
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const docs: Document[] = snapshot.docs.map((doc) => ({
@@ -142,7 +138,29 @@ export default function Dropzone() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [userDoc]);
+
+  // useEffect(() => {
+  //   if (!user?.uid) return; // safeguard in case user is null
+
+  //   const q = query(collection(db, "users"), where("userId", "==", user.uid));
+
+  //   const unsubscribe = onSnapshot(q, (snapshot) => {
+  //     if (!snapshot.empty) {
+  //       const doc = snapshot.docs[0];
+  //       const userDoc: User = {
+  //         id: doc.id,
+  //         ...(doc.data() as Omit<User, "id">),
+  //       };
+
+  //       setUserDoc(userDoc);
+  //     } else {
+  //       setUserDoc(null);
+  //     }
+  //   });
+
+  //   return () => unsubscribe();
+  // }, []);
 
   // useEffect(() => {
   //   const q = query(
@@ -302,6 +320,7 @@ export default function Dropzone() {
                                     changes
                                   );
                                   toast("Changes Saved");
+                                  setSelectedDocumentCopy(selectedDocumentCopy);
                                 }
                               }}
                             >
@@ -445,6 +464,22 @@ export default function Dropzone() {
                             </SidebarGroupLabel>
                             {!collapseMetadata && (
                               <div className="text-xs text-gray-500 px-2 gap-2">
+                                <Button
+                                  className="h-6 w-full text-sm text-gray-500"
+                                  variant="outline"
+                                  onClick={() => {
+                                    if (!selectedDocument) return;
+                                    const newMetaData =
+                                      selectedDocument?.metadata;
+                                    newMetaData.push({ key: "", value: "" });
+                                    setSelectedDocument({
+                                      ...selectedDocument,
+                                      metadata: newMetaData,
+                                    });
+                                  }}
+                                >
+                                  + Add Metadata Field
+                                </Button>
                                 {selectedDocument?.metadata.map(
                                   (item, index) => (
                                     <div
@@ -472,15 +507,6 @@ export default function Dropzone() {
                                     </div>
                                   )
                                 )}
-                                <Button
-                                  className="h-6 w-full text-sm text-gray-500"
-                                  variant="outline"
-                                  onClick={() => {
-                                    console.log(user);
-                                  }}
-                                >
-                                  + Add Metadata Field
-                                </Button>
                               </div>
                             )}
                           </SidebarGroup>

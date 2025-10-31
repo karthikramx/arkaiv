@@ -12,7 +12,7 @@ import {
   User,
 } from "firebase/auth";
 import { Spinner } from "@/components/ui/spinner";
-import { ReactNode } from "react";
+import { ChildrenProps } from "@/interfaces";
 
 interface AuthContextType {
   user: User | null;
@@ -31,10 +31,6 @@ interface AuthContextType {
   ) => Promise<{ resp: void | null; error: Error | null }>;
 }
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
 const AuthContext = createContext<AuthContextType>({
   user: null,
   login: async () => ({ user: null, error: null }),
@@ -43,10 +39,10 @@ const AuthContext = createContext<AuthContextType>({
   forgotPassword: async () => ({ resp: null, error: null }),
 });
 
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: ChildrenProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hydrated, setHydrated] = useState(false); // NEW
+  const [hydrated, setHydrated] = useState(false);
 
   // Mark component as hydrated
   useEffect(() => {
@@ -54,7 +50,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   useEffect(() => {
-    console.log("this will run on page refresh!");
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);

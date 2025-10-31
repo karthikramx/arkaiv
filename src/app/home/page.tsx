@@ -1,5 +1,3 @@
-// import { SignupForm } from "@/components/signup-form";
-
 "use client";
 
 import { AuthProvider, useAuth } from "@/context/AuthContext";

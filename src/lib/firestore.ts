@@ -26,23 +26,25 @@ export const createDocument = async (
 };
 
 // Read a document by ID
-export const readDocuments = async (collectionName: string, id: string) => {
+export async function readDocument<T>(
+  collectionName: string,
+  id: string
+): Promise<T | null> {
   try {
     const docRef = doc(db, collectionName, id);
     const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
-      return { id: docSnap.id, ...docSnap.data() };
-    } else {
+    if (!docSnap.exists()) {
       console.log("No such document!");
       return null;
     }
+
+    return { id: docSnap.id, ...docSnap.data() } as T;
   } catch (error) {
     console.error("Error reading document:", error);
     throw error;
   }
-};
+}
 
 // Update a document by ID
 export const updateDocument = async <T>(
@@ -75,4 +77,5 @@ export const deleteDocument = async (collectionName: string, id: string) => {
 };
 
 // TODO: Reading multiple document using a query
+
 // TODO: Updating multiple documents using a query

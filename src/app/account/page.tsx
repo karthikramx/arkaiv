@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-export function Account() {
+export default function Account() {
   return (
     <div>
       <div className="w-full max-w-md">

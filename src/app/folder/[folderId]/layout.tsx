@@ -4,5 +4,5 @@ export default function FolderLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>; // no modal slot here anymore
+  return <>{children}</>;
 }

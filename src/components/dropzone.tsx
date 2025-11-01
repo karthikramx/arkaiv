@@ -13,7 +13,10 @@ import { storage, db } from "@/lib/firebase";
 import { useDropzone } from "react-dropzone";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -35,7 +38,7 @@ import {
 } from "@/components/ui/context-menu";
 import { toast } from "sonner";
 import { deleteStoredDocument } from "@/services/document";
-
+import { Label } from "@radix-ui/react-dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -59,6 +62,8 @@ import { getChangedFields } from "@/lib/utils";
 import { Document } from "@/interfaces";
 import { User } from "@/interfaces";
 import { useTeam } from "@/context/TeamContext";
+import { useRouter } from "next/navigation";
+import { createFolder } from "@/services/folder";
 
 interface Folder {
   id: string;
@@ -78,11 +83,10 @@ export default function Dropzone() {
   const { user } = useAuth();
   const { userDoc }: { userDoc: User | null } = useTeam();
   const [folders, setFolders] = useState<Folder[]>([]);
-  // const [userDoc, setUserDoc] = useState<User | null>(null);
-
+  const [newFolderName, setNewFolderName] = useState("untitled");
+  const [createFolderDialog, setCreateFolderDialog] = useState(false);
   const allTags = ["test", "test2", "test3"];
-
-  // TODO: add tags to db, with team id and - each account has its own tags
+  const router = useRouter();
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -106,7 +110,8 @@ export default function Dropzone() {
             uploadedBy: user?.uid,
             uploadedByName: user?.displayName,
             uploadedByEmail: user?.email,
-            team: userDoc.currentTeam,
+            teamId: userDoc.currentTeam,
+            folderId: "home",
             size: fileSizeInMB,
             summary: "",
             description: "",
@@ -127,10 +132,10 @@ export default function Dropzone() {
 
   useEffect(() => {
     if (!userDoc?.currentTeam) return;
-
     const q = query(
       collection(db, "documents"),
-      where("team", "==", userDoc?.currentTeam)
+      where("teamId", "==", userDoc?.currentTeam),
+      where("folderId", "==", "home")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const docs: Document[] = snapshot.docs.map((doc) => ({
@@ -144,9 +149,11 @@ export default function Dropzone() {
   }, [userDoc]);
 
   useEffect(() => {
+    if (!userDoc?.currentTeam) return;
     const q = query(
       collection(db, "folders"),
-      where("createdBy", "==", user?.uid)
+      where("teamId", "==", userDoc?.currentTeam),
+      where("parentFolderId", "==", "home")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const folders = snapshot.docs.map((doc) => ({
@@ -157,13 +164,22 @@ export default function Dropzone() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [userDoc]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     noClick: true,
     accept: { "application/pdf": [".pdf"] },
   });
+
+  // TODO: implement folder deletion .. need to implement a function here!
+  const deleteFolder = (folderId: string) => {
+    // 1. Get all the sub foldeers
+    // 2. Get all the documents in the folder
+    // 3. Delete all the documents
+    // 4. Loop through subfolders and delete them recursively
+    // 5. Delete the main folder
+  };
 
   return (
     <div className="w-full h-full">
@@ -194,6 +210,9 @@ export default function Dropzone() {
                       key={folder.id}
                       className="bg-blue-100 relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
                       title={folder.name}
+                      onDoubleClick={() => {
+                        router.push(`/folder/${folder.id}`);
+                      }}
                     >
                       <div className="flex-1 flex items-center justify-center w-full h-full p-3">
                         <div>
@@ -535,19 +554,63 @@ export default function Dropzone() {
                   </div>
                 </DialogContent>
               </Dialog>
+
+              <Dialog
+                open={createFolderDialog}
+                onOpenChange={setCreateFolderDialog}
+              >
+                <form>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Create a new Team</DialogTitle>
+                      <DialogDescription>
+                        Create a new Team by entering its name and type. This
+                        action can be undone by deleting the team
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4">
+                      <div className="grid gap-3">
+                        <Label>Folder Name</Label>
+                        <Input
+                          id="name-1"
+                          name="name"
+                          defaultValue={newFolderName}
+                          onChange={(e) => {
+                            setNewFolderName(e.target.value);
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button
+                        type="submit"
+                        onClick={async () => {
+                          if (userDoc?.currentTeam) {
+                            await createFolder(
+                              newFolderName,
+                              "home",
+                              userDoc?.currentTeam
+                            );
+                          }
+                          setCreateFolderDialog(false);
+                          setNewFolderName("untitled");
+                        }}
+                      >
+                        Create Folder
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </form>
+              </Dialog>
             </div>
           </div>
           <ContextMenuContent>
             <ContextMenuItem
               onClick={async () => {
-                await createDocument("folders", {
-                  name: "Untitled",
-                  path: "",
-                  parent: "",
-                  teamId: userDoc?.currentTeam,
-                  createdBy: user?.uid,
-                  createdAt: serverTimestamp(),
-                });
+                setCreateFolderDialog(true);
               }}
             >
               New Folder

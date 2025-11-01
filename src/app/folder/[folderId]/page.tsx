@@ -9,6 +9,8 @@ import { useDropzone } from "react-dropzone";
 import { useTeam } from "@/context/TeamContext";
 import { useAuth } from "@/context/AuthContext";
 import { deleteStoredDocument } from "@/services/document";
+import { useRouter } from "next/navigation";
+import { createFolder } from "@/services/folder";
 import DocumentViewPort from "./(.)document/[documentId]/page";
 
 // Firebase and Firestore imports
@@ -22,6 +24,18 @@ import {
 } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
 import { createDocument, deleteDocument } from "@/lib/firestore";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function FoldersViewPort() {
   const params = useParams();
@@ -29,6 +43,8 @@ export default function FoldersViewPort() {
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
+  const [createFolderDialog, setCreateFolderDialog] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("untitled");
 
   const [open, setOpen] = useState(false);
   const [collapseMetadata, setCollapseMetadata] = useState(false);
@@ -39,6 +55,7 @@ export default function FoldersViewPort() {
     useState<Document | null>(null);
   const { user } = useAuth();
   const { userDoc }: { userDoc: User | null } = useTeam();
+  const router = useRouter();
 
   // close modal on browser navigation (back/forward) when URL no longer contains /document/
   useEffect(() => {
@@ -54,6 +71,46 @@ export default function FoldersViewPort() {
     window.addEventListener("popstate", handler);
     return () => window.removeEventListener("popstate", handler);
   }, []);
+
+  // get all the subfolders
+  useEffect(() => {
+    const q = query(
+      collection(db, "folders"),
+      where("teamId", "==", userDoc?.currentTeam),
+      where("parentFolderId", "==", folderId)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const folders = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Document, "id">),
+      }));
+      setFolders(folders);
+      console.log("Fetched folders:", folders);
+      console.log("Folder ID:", folderId);
+    });
+
+    return () => unsubscribe();
+  }, [userDoc, folderId]);
+
+  // get all the docs for this folder
+  useEffect(() => {
+    if (!userDoc?.currentTeam) return;
+
+    const q = query(
+      collection(db, "documents"),
+      where("teamId", "==", userDoc?.currentTeam), // TODO: change this to teamId
+      where("folderId", "==", folderId)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const docs: Document[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Document, "id">),
+      }));
+      setDocuments(docs);
+    });
+
+    return () => unsubscribe();
+  }, [userDoc, folderId]);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -97,57 +154,23 @@ export default function FoldersViewPort() {
     [userDoc, user, folderId]
   );
 
-  useEffect(() => {
-    if (!userDoc?.currentTeam) return;
-
-    const q = query(
-      collection(db, "documents"),
-      where("team", "==", userDoc?.currentTeam) // TODO: change this to teamId
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs: Document[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Document, "id">),
-      }));
-      setDocuments(docs);
-    });
-
-    return () => unsubscribe();
-  }, [userDoc]);
-
-  useEffect(() => {
-    const q = query(
-      collection(db, "folders"),
-      where("createdBy", "==", user?.uid)
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const folders = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Document, "id">),
-      }));
-      setFolders(folders);
-    });
-
-    return () => unsubscribe();
-  }, [user?.uid]);
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     noClick: true,
     accept: { "application/pdf": [".pdf"] },
   });
 
-  // Folder level functions
-  const createNewFolder = async () => {
-    await createDocument("folders", {
-      name: "Untitled",
-      path: "",
-      parent: "",
-      teamId: userDoc?.currentTeam,
-      createdBy: user?.uid,
-      createdAt: serverTimestamp(),
-    });
-  };
+  // // Folder level functions
+  // const createNewFolder = async () => {
+  //   await createDocument("folders", {
+  //     name: "Untitled",
+  //     path: "",
+  //     parentFolderId: folderId,
+  //     teamId: userDoc?.currentTeam,
+  //     createdBy: user?.uid,
+  //     createdAt: serverTimestamp(),
+  //   });
+  // };
 
   const deleteFolder = async (folderId: string) => {
     await deleteDocument("folders", folderId);
@@ -171,7 +194,12 @@ export default function FoldersViewPort() {
     <div className="w-full h-full">
       <ContextMenuComponent
         items={[
-          { label: "New Folder", onClick: async () => createNewFolder },
+          {
+            label: "New Folder",
+            onClick: async () => {
+              setCreateFolderDialog(true);
+            },
+          },
           { label: "Delete", onClick: () => console.log("Delete clicked") },
           { label: "Share", onClick: () => console.log("Share clicked") },
         ]}
@@ -216,6 +244,9 @@ export default function FoldersViewPort() {
                   key={folder.id}
                   className="bg-blue-100 relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
                   title={folder.name}
+                  onDoubleClick={() => {
+                    router.push(`/folder/${folder.id}`);
+                  }}
                 >
                   <div className="flex-1 flex items-center justify-center w-full h-full p-3">
                     <div>
@@ -232,6 +263,57 @@ export default function FoldersViewPort() {
               </ContextMenuComponent>
             ))}
           </div>
+
+          <Dialog
+            open={createFolderDialog}
+            onOpenChange={setCreateFolderDialog}
+          >
+            <form>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Create a new Team</DialogTitle>
+                  <DialogDescription>
+                    Create a new Team by entering its name and type. This action
+                    can be undone by deleting the team
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4">
+                  <div className="grid gap-3">
+                    <Label>Folder Name</Label>
+                    <Input
+                      id="name-1"
+                      name="name"
+                      defaultValue={newFolderName}
+                      onChange={(e) => {
+                        setNewFolderName(e.target.value);
+                      }}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button
+                    type="submit"
+                    onClick={async () => {
+                      if (userDoc?.currentTeam) {
+                        await createFolder(
+                          newFolderName,
+                          folderId,
+                          userDoc?.currentTeam
+                        );
+                      }
+                      setCreateFolderDialog(false);
+                      setNewFolderName("untitled");
+                    }}
+                  >
+                    Create Folder
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </form>
+          </Dialog>
 
           {/*Document Views*/}
           <div className="p-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-5">

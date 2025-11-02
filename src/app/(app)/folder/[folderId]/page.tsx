@@ -74,6 +74,8 @@ export default function FoldersViewPort() {
 
   // get all the subfolders
   useEffect(() => {
+    if (!userDoc?.currentTeam) return;
+    if (!folderId) return;
     const q = query(
       collection(db, "folders"),
       where("teamId", "==", userDoc?.currentTeam),
@@ -85,8 +87,6 @@ export default function FoldersViewPort() {
         ...(doc.data() as Omit<Document, "id">),
       }));
       setFolders(folders);
-      console.log("Fetched folders:", folders);
-      console.log("Folder ID:", folderId);
     });
 
     return () => unsubscribe();

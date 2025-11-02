@@ -92,8 +92,6 @@ export function TeamProvider({ children }: ChildrenProps) {
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       if (snapshot.empty) return;
 
-      console.log("Running the part!");
-
       const doc = snapshot.docs[0];
       const userData = { id: doc.id, ...doc.data() } as User;
       setUserDoc(userData);

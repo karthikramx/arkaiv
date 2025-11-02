@@ -89,7 +89,7 @@ export default function Page() {
                   <Input
                     id="name"
                     type="text"
-                    placeholder="Mahesh Babu"
+                    placeholder="Your Good Name"
                     required
                     onChange={(e) => {
                       setUserName(e.target.value);
@@ -101,7 +101,7 @@ export default function Page() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="mb@example.com"
+                    placeholder="yourname@example.com"
                     required
                     onChange={(e) => {
                       setEmail(e.target.value);

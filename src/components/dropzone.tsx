@@ -173,13 +173,13 @@ export default function Dropzone() {
   });
 
   // TODO: implement folder deletion .. need to implement a function here!
-  const deleteFolder = (folderId: string) => {
-    // 1. Get all the sub foldeers
-    // 2. Get all the documents in the folder
-    // 3. Delete all the documents
-    // 4. Loop through subfolders and delete them recursively
-    // 5. Delete the main folder
-  };
+  // const deleteFolder = (folderId: string) => {
+  // 1. Get all the sub foldeers
+  // 2. Get all the documents in the folder
+  // 3. Delete all the documents
+  // 4. Loop through subfolders and delete them recursively
+  // 5. Delete the main folder
+  // };
 
   return (
     <div className="w-full h-full">

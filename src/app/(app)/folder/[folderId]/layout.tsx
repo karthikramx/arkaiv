@@ -1,3 +1,5 @@
+"use client";
+
 // app/folder/[folderId]/layout.tsx
 export default function FolderLayout({
   children,

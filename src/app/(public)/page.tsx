@@ -10,6 +10,8 @@ export default function Landing() {
   const router = useRouter();
   const { user } = useAuth();
 
+  console.log("Landing page user:", user);
+
   useEffect(() => {
     if (user) router.push("/home");
   }, [user, router]);

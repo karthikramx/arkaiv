@@ -1,41 +1,56 @@
-import { createContext, useContext, useState } from "react";
+"use client";
 
-// Context to keep track of current folder
+import { createContext, useContext, useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { readDocument } from "@/lib/firestore";
 
 interface FolderContextType {
   currentFolderId: string | null;
-  setCurrentFolderId: (folderId: string | null) => void;
-  // lineage is a array of objects donot use any
   currentFolderLineage: {
     id: string;
     name: string;
     parentFolderId: string | null;
   }[];
-  setCurrentFolderLineage: (
-    lineage: { id: string; name: string; parentFolderId: string | null }[]
-  ) => void;
 }
 
 export const FolderContext = createContext<FolderContextType>({
   currentFolderId: null,
-  setCurrentFolderId: () => {},
   currentFolderLineage: [],
-  setCurrentFolderLineage: () => {},
 });
 
 export const FolderProvider = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [currentFolderLineage, setCurrentFolderLineage] = useState<
     { id: string; name: string; parentFolderId: string | null }[]
   >([]);
 
+  // print the current url whenever it changes
+  useEffect(() => {
+    const handler = async () => {
+      const path = window.location.pathname;
+      const pathParts = path.split("/");
+      const segment = pathParts[1];
+      if (segment === "folder") {
+        const folderId = pathParts[2] || null;
+        setCurrentFolderId(folderId);
+        if (folderId) {
+          const folderData = await readDocument("folders", folderId);
+          setCurrentFolderLineage(folderData.lineage);
+        }
+      } else if (segment === "home") {
+        setCurrentFolderId(null);
+        setCurrentFolderLineage([]);
+      }
+    };
+    handler(); // call it once on mount to set the initial folder id
+  }, [pathname]);
+
   return (
     <FolderContext.Provider
       value={{
         currentFolderId,
-        setCurrentFolderId,
         currentFolderLineage,
-        setCurrentFolderLineage,
       }}
     >
       {children}

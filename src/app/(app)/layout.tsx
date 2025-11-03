@@ -1,5 +1,3 @@
-"use client";
-
 // app/(app)/layout.tsx
 "use client";
 
@@ -16,7 +14,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";

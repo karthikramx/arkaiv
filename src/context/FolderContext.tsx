@@ -19,6 +19,7 @@ export const FolderContext = createContext<FolderContextType>({
 });
 
 export const FolderProvider = ({ children }: { children: React.ReactNode }) => {
+  ``;
   const pathname = usePathname();
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [currentFolderLineage, setCurrentFolderLineage] = useState<

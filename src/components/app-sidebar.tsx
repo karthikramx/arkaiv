@@ -144,7 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userDoc, createTeam, switchTeam } = useTeam();
   const [createTeamDialog, setCreateTeamDialog] = useState(false);
   const [teamName, setTeamName] = useState("Team X");
-  const [teamType, setTeamType] = useState("team");
+
   const [activeTeam, setActiveTeam] = React.useState([]);
 
   data.user.email = user?.email ?? "";
@@ -248,7 +248,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Button
                 type="submit"
                 onClick={async () => {
-                  await createTeam(teamName, teamType);
+                  await createTeam(teamName, "team");
                   toast("New team created");
                   setCreateTeamDialog(false);
                 }}

@@ -49,7 +49,24 @@ export default function InterceptedDocumentPage() {
   }, [documentId]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <DocumentViewPort
+        open={true}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            router.push(`/folder/${folderId}`);
+          }
+        }}
+        selectedDocument={null}
+        setSelectedDocument={setSelectedDocument}
+        selectedDocumentCopy={null}
+        setSelectedDocumentCopy={setSelectedDocumentCopy}
+        collapseMetadata={collapseMetadata}
+        setCollapseMetadata={setCollapseMetadata}
+        isModal={true}
+        loading={true}
+      />
+    );
   }
 
   return (

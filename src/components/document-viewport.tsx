@@ -41,6 +41,7 @@ type DocumentModalProps = {
   setCollapseMetadata?: (c: boolean) => void;
   documentId?: string; // Allow loading by ID for standalone usage
   isModal?: boolean; // Distinguish between modal and full-page usage
+  loading?: boolean; // Show loading state
 };
 
 // Document content component that can be used both in modal and full-page
@@ -362,19 +363,28 @@ export default function DocumentViewPort(props: DocumentModalProps) {
           {/* Dialog Header (top bar) */}
           <DialogHeader className="px-6 py-4 bg-white z-50 relative">
             <DialogTitle className="text-sm font-semibold truncate">
-              {selectedDocument?.name}
+              {props?.loading ? "Loading..." : selectedDocument?.name}
             </DialogTitle>
           </DialogHeader>
 
           {/* Main Content Area */}
-          <DocumentContent
-            selectedDocument={selectedDocument}
-            setSelectedDocument={setSelectedDocument}
-            selectedDocumentCopy={selectedDocumentCopy}
-            setSelectedDocumentCopy={setSelectedDocumentCopy}
-            collapseMetadata={collapseMetadata}
-            setCollapseMetadata={setCollapseMetadata}
-          />
+          {props?.loading ? (
+            <div className="flex h-[85vh] items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <div className="text-sm text-gray-500">Loading document...</div>
+              </div>
+            </div>
+          ) : (
+            <DocumentContent
+              selectedDocument={selectedDocument}
+              setSelectedDocument={setSelectedDocument}
+              selectedDocumentCopy={selectedDocumentCopy}
+              setSelectedDocumentCopy={setSelectedDocumentCopy}
+              collapseMetadata={collapseMetadata}
+              setCollapseMetadata={setCollapseMetadata}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

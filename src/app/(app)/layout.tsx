@@ -45,7 +45,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <SidebarInset>
           {/* Header Section */}
-          <header className="flex h-16 items-center gap-2 px-4 border-b">
+          <header className="flex h-12 items-center gap-3">
             <SidebarTrigger />
             <Separator orientation="vertical" className="h-4" />
             <Breadcrumb>

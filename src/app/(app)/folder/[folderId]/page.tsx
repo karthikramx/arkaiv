@@ -39,6 +39,7 @@ export default function FoldersViewPort() {
   const params = useParams();
   const folderId = params.folderId as string;
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [createFolderDialog, setCreateFolderDialog] = useState(false);
@@ -63,6 +64,7 @@ export default function FoldersViewPort() {
         ...(doc.data() as Omit<Folder, "id">),
       }));
       setFolders(folders);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -83,6 +85,7 @@ export default function FoldersViewPort() {
         ...(doc.data() as Omit<Document, "id">),
       }));
       setDocuments(docs);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -164,6 +167,17 @@ export default function FoldersViewPort() {
       toast("Document Deleted Successfully");
     }
   };
+
+  if (loading || !userDoc) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Spinner />
+          <div className="text-sm text-gray-500">Loading folder...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full">

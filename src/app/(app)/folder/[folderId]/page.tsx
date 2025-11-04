@@ -11,7 +11,6 @@ import { useAuth } from "@/context/AuthContext";
 import { deleteStoredDocument } from "@/services/document";
 import { createFolder } from "@/services/folder";
 
-
 // Firebase and Firestore imports
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
@@ -45,12 +44,9 @@ export default function FoldersViewPort() {
   const [createFolderDialog, setCreateFolderDialog] = useState(false);
   const [newFolderName, setNewFolderName] = useState("untitled");
 
-
   const { user } = useAuth();
   const { userDoc }: { userDoc: User | null } = useTeam();
   const router = useRouter();
-
-
 
   // get all the subfolders
   useEffect(() => {
@@ -337,7 +333,6 @@ export default function FoldersViewPort() {
           </div>
         </div>
       </ContextMenuComponent>
-
     </div>
   );
 }

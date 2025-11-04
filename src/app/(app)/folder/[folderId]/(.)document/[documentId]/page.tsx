@@ -11,9 +11,12 @@ export default function InterceptedDocumentPage() {
   const router = useRouter();
   const documentId = params.documentId as string;
   const folderId = params.folderId as string;
-  
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [selectedDocumentCopy, setSelectedDocumentCopy] = useState<Document | null>(null);
+
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null
+  );
+  const [selectedDocumentCopy, setSelectedDocumentCopy] =
+    useState<Document | null>(null);
   const [collapseMetadata, setCollapseMetadata] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -21,17 +24,17 @@ export default function InterceptedDocumentPage() {
   useEffect(() => {
     const loadDocument = async () => {
       if (!documentId) return;
-      
+
       try {
         const docRef = doc(db, "documents", documentId);
         const docSnap = await getDoc(docRef);
-        
+
         if (docSnap.exists()) {
           const documentData = {
             id: docSnap.id,
-            ...docSnap.data()
+            ...docSnap.data(),
           } as Document;
-          
+
           setSelectedDocument(documentData);
           setSelectedDocumentCopy(documentData);
         }

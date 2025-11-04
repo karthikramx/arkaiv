@@ -93,7 +93,7 @@ export function TeamSwitcher({
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-md border">
-                  {typeof team.logo === 'string' ? (
+                  {typeof team.logo === "string" ? (
                     <img
                       src={team.logo}
                       alt={team.teamId || team.id}

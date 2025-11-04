@@ -176,11 +176,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader>
           <TeamSwitcher
-            teams={userDoc?.teams ? userDoc.teams.map(team => ({
-              ...team,
-              id: team.teamId,
-              logo: GalleryVerticalEnd // Default icon for user teams
-            })) : data.teams}
+            teams={
+              userDoc?.teams
+                ? userDoc.teams.map((team) => ({
+                    ...team,
+                    id: team.teamId,
+                    logo: GalleryVerticalEnd, // Default icon for user teams
+                  }))
+                : data.teams
+            }
             activeTeam={activeTeam}
             setActiveTeam={switchTeam}
             addTeamHandler={onAddTeamHander}
@@ -191,11 +195,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           {/* <NavProjects projects={data.projects} /> */}
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={userDoc ? {
-            name: userDoc.name,
-            email: userDoc.email,
-            avatar: userDoc.imageUrl
-          } : data.user} />
+          <NavUser
+            user={
+              userDoc
+                ? {
+                    name: userDoc.name,
+                    email: userDoc.email,
+                    avatar: userDoc.imageUrl,
+                  }
+                : data.user
+            }
+          />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>

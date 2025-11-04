@@ -91,31 +91,26 @@ function DocumentContent({
               setCollapseMetadata(!collapseMetadata);
             }}
           />
-          {!collapseMetadata &&
-            selectedDocument !== selectedDocumentCopy && (
-              <Button
-                size="icon"
-                variant="ghost"
-                className="absolute shadow right-1 -top-5 z-50 border-none"
-                onClick={() => {
-                  const changes = getChangedFields(
-                    selectedDocumentCopy,
-                    selectedDocument
-                  );
-                  if (selectedDocument) {
-                    updateDocument(
-                      "documents",
-                      selectedDocument?.id,
-                      changes
-                    );
-                    toast("Changes Saved");
-                    setSelectedDocumentCopy(selectedDocument);
-                  }
-                }}
-              >
-                <Save />
-              </Button>
-            )}
+          {!collapseMetadata && selectedDocument !== selectedDocumentCopy && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="absolute shadow right-1 -top-5 z-50 border-none"
+              onClick={() => {
+                const changes = getChangedFields(
+                  selectedDocumentCopy,
+                  selectedDocument
+                );
+                if (selectedDocument) {
+                  updateDocument("documents", selectedDocument?.id, changes);
+                  toast("Changes Saved");
+                  setSelectedDocumentCopy(selectedDocument);
+                }
+              }}
+            >
+              <Save />
+            </Button>
+          )}
           <SidebarContent className="max-h-[76vh] overflow-y-auto bg-white">
             <SidebarGroup>
               <SidebarGroupLabel>Document Data</SidebarGroupLabel>
@@ -154,9 +149,7 @@ function DocumentContent({
 
                     {/* Uploaded By Name */}
                     <div className="flex flex-wrap">
-                      <span className="font-medium truncate">
-                        Uploaded By:
-                      </span>
+                      <span className="font-medium truncate">Uploaded By:</span>
                       <span
                         className="truncate"
                         title={selectedDocument?.uploadedByName}
@@ -167,18 +160,14 @@ function DocumentContent({
 
                     {/* Created At */}
                     <div className="flex flex-wrap">
-                      <span className="font-medium truncate">
-                        Created At:
-                      </span>
+                      <span className="font-medium truncate">Created At:</span>
                       <span
                         className="truncate"
                         title={selectedDocument?.createdAt
                           ?.toDate()
                           ?.toDateString()}
                       >
-                        {selectedDocument?.createdAt
-                          ?.toDate()
-                          ?.toDateString()}
+                        {selectedDocument?.createdAt?.toDate()?.toDateString()}
                       </span>
                     </div>
                   </div>
@@ -252,7 +241,9 @@ function DocumentContent({
                     variant="outline"
                     onClick={() => {
                       if (!selectedDocument) return;
-                      const newMetaData = [...(selectedDocument?.metadata || [])];
+                      const newMetaData = [
+                        ...(selectedDocument?.metadata || []),
+                      ];
                       newMetaData.push({ key: "", value: "" });
                       setSelectedDocument({
                         ...selectedDocument,
@@ -295,7 +286,9 @@ function DocumentContent({
                         variant="ghost"
                         onClick={() => {
                           if (!selectedDocument) return;
-                          const newMetaData = selectedDocument.metadata.filter((_, i) => i !== index);
+                          const newMetaData = selectedDocument.metadata.filter(
+                            (_, i) => i !== index
+                          );
                           setSelectedDocument({
                             ...selectedDocument,
                             metadata: newMetaData,

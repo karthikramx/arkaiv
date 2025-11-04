@@ -60,16 +60,19 @@ const data = {
   },
   teams: [
     {
+      id: "1",
       name: "Acme Inc LALALA",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
     },
     {
+      id: "2",
       name: "Acme Corp.",
       logo: AudioWaveform,
       plan: "Startup",
     },
     {
+      id: "3",
       name: "Evil Corp.",
       logo: Command,
       plan: "Free",
@@ -145,7 +148,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [createTeamDialog, setCreateTeamDialog] = useState(false);
   const [teamName, setTeamName] = useState("Team X");
 
-  const [activeTeam, setActiveTeam] = React.useState([]);
+  const [activeTeam, setActiveTeam] = React.useState<{
+    teamId: string;
+    role: string;
+    logo: string;
+    name: string;
+    plan: string;
+  } | null>(null);
 
   data.user.email = user?.email ?? "";
   data.user.name = user?.displayName ?? "Update Display Name";
@@ -155,7 +164,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const currentTeam = userDoc?.teams.find(
       (t) => t.teamId === userDoc?.currentTeam
     );
-    setActiveTeam(currentTeam);
+    setActiveTeam(currentTeam || null);
   }, [userDoc]);
 
   const onAddTeamHander = async () => {
@@ -167,7 +176,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader>
           <TeamSwitcher
-            teams={userDoc?.teams ? userDoc?.teams : data.teams}
+            teams={userDoc?.teams ? userDoc.teams.map(team => ({
+              ...team,
+              id: team.teamId,
+              logo: GalleryVerticalEnd // Default icon for user teams
+            })) : data.teams}
             activeTeam={activeTeam}
             setActiveTeam={switchTeam}
             addTeamHandler={onAddTeamHander}
@@ -178,7 +191,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           {/* <NavProjects projects={data.projects} /> */}
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={userDoc ? userDoc : data.user} />
+          <NavUser user={userDoc ? {
+            name: userDoc.name,
+            email: userDoc.email,
+            avatar: userDoc.imageUrl
+          } : data.user} />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>

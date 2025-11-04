@@ -1,6 +1,6 @@
 "use client";
 import ContextMenuComponent from "@/components/contextmenu";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useCallback, useEffect } from "react";
 import { User, Folder, Document } from "@/interfaces";
 import { toast } from "sonner";
@@ -9,9 +9,8 @@ import { useDropzone } from "react-dropzone";
 import { useTeam } from "@/context/TeamContext";
 import { useAuth } from "@/context/AuthContext";
 import { deleteStoredDocument } from "@/services/document";
-import { useRouter } from "next/navigation";
 import { createFolder } from "@/services/folder";
-import DocumentViewPort from "./(.)document/[documentId]/page";
+
 
 // Firebase and Firestore imports
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -46,31 +45,12 @@ export default function FoldersViewPort() {
   const [createFolderDialog, setCreateFolderDialog] = useState(false);
   const [newFolderName, setNewFolderName] = useState("untitled");
 
-  const [open, setOpen] = useState(false);
-  const [collapseMetadata, setCollapseMetadata] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
-    null
-  );
-  const [selectedDocumentCopy, setSelectedDocumentCopy] =
-    useState<Document | null>(null);
+
   const { user } = useAuth();
   const { userDoc }: { userDoc: User | null } = useTeam();
   const router = useRouter();
 
-  // close modal on browser navigation (back/forward) when URL no longer contains /document/
-  useEffect(() => {
-    const handler = () => {
-      if (typeof window === "undefined") return;
-      const path = window.location.pathname;
-      if (!path.includes("/document/")) {
-        setOpen(false);
-        setSelectedDocument(null);
-        setSelectedDocumentCopy(null);
-      }
-    };
-    window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
-  }, []);
+
 
   // get all the subfolders
   useEffect(() => {
@@ -84,7 +64,7 @@ export default function FoldersViewPort() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const folders = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...(doc.data() as Omit<Document, "id">),
+        ...(doc.data() as Omit<Folder, "id">),
       }));
       setFolders(folders);
     });
@@ -178,9 +158,8 @@ export default function FoldersViewPort() {
 
   // File level functions
   const viewFile = (doc: Document) => {
-    setSelectedDocument(doc);
-    setSelectedDocumentCopy(doc);
-    setOpen(true);
+    // Navigate to document route - this will be intercepted by the (.)document route
+    router.push(`/folder/${folderId}/document/${doc.id}`);
   };
 
   const deleteFile = async (doc: Document) => {
@@ -336,19 +315,8 @@ export default function FoldersViewPort() {
                   key={doc.id}
                   className="relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer bg-white"
                   onDoubleClick={() => {
-                    // open modal locally and update the URL without navigating away
-                    setSelectedDocument(doc);
-                    setSelectedDocumentCopy(doc);
-                    setOpen(true);
-                    setCollapseMetadata(false);
-                    // push URL so it shows the document route but keep current page (no full navigation)
-                    if (typeof window !== "undefined") {
-                      window.history.pushState(
-                        {},
-                        "",
-                        `/folder/${folderId}/document/${doc.id}`
-                      );
-                    }
+                    // Navigate to document route - this will be intercepted by the (.)document route
+                    router.push(`/folder/${folderId}/document/${doc.id}`);
                   }}
                   title={doc.name}
                 >
@@ -369,25 +337,7 @@ export default function FoldersViewPort() {
           </div>
         </div>
       </ContextMenuComponent>
-      {/* Modal (controlled) - renders as overlay in this page and keeps the URL in sync */}
-      <DocumentViewPort
-        open={open}
-        onOpenChange={(o) => {
-          setOpen(o);
-          // when the modal closes, restore the folder-only URL
-          if (!o && typeof window !== "undefined") {
-            window.history.pushState({}, "", `/folder/${folderId}`);
-            setSelectedDocument(null);
-            setSelectedDocumentCopy(null);
-          }
-        }}
-        selectedDocument={selectedDocument}
-        setSelectedDocument={setSelectedDocument}
-        selectedDocumentCopy={selectedDocumentCopy}
-        setSelectedDocumentCopy={setSelectedDocumentCopy}
-        collapseMetadata={collapseMetadata}
-        setCollapseMetadata={setCollapseMetadata}
-      />
+
     </div>
   );
 }

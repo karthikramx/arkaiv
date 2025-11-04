@@ -66,4 +66,13 @@ export interface Team {
 export interface Folder {
   id: string;
   name: string;
+  parentFolderId?: string | null;
+  teamId?: string;
+  createdBy?: string;
+  createdAt?: Date;
+  lineage?: {
+    id: string;
+    name: string;
+    parentFolderId: string | null;
+  }[];
 }

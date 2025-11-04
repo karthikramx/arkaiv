@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { readDocument } from "@/lib/firestore";
+import { Folder } from "@/interfaces";
 
 interface FolderContextType {
   currentFolderId: string | null;
@@ -35,8 +36,8 @@ export const FolderProvider = ({ children }: { children: React.ReactNode }) => {
         const folderId = pathParts[2] || null;
         setCurrentFolderId(folderId);
         if (folderId) {
-          const folderData = await readDocument("folders", folderId);
-          setCurrentFolderLineage(folderData.lineage);
+          const folderData = await readDocument<Folder>("folders", folderId);
+          setCurrentFolderLineage(folderData?.lineage || []);
         }
       } else if (segment === "home") {
         setCurrentFolderId(null);

@@ -79,6 +79,8 @@ export function TeamProvider({ children }: ChildrenProps) {
         currentTeam: teamId,
       });
     }
+    // navigate to home page after switching team
+    window.location.href = "/home";
   };
 
   // const deleteTeam = async (id: string) => {};

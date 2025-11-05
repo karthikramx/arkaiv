@@ -10,6 +10,7 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   User,
+  sendEmailVerification,
 } from "firebase/auth";
 import { Spinner } from "@/components/ui/spinner";
 import { ChildrenProps } from "@/interfaces";

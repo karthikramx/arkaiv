@@ -22,7 +22,13 @@ export default function Landing() {
         <section className="container flex flex-col gap-10 text-center lg:items-center lg:gap-8 mt-[-150px]">
           <div className="flex flex-1 flex-col items-center gap-5 text-center lg:gap-8">
             <div>
-              <h1 className="text-4xl font-bold lg:text-6xl">Meet Arkaiv</h1>
+              <h1 className="text-4xl font-bold lg:text-6xl">
+                Meet Ark
+                <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+                  ai
+                </span>
+                v
+              </h1>
               <h2 className="text-lg font-light text-muted-foreground lg:text-3xl">
                 Your intelligent vault for every document.
               </h2>

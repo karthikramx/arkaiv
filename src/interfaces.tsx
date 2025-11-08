@@ -17,6 +17,7 @@ export interface Document {
   id: string;
   name: string;
   url: string;
+  thumbnailUrl?: string;
   uploadedBy: string;
   uploadedByName: string;
   uploadedByEmail: string;
@@ -75,4 +76,11 @@ export interface Folder {
     name: string;
     parentFolderId: string | null;
   }[];
+}
+export interface Invite {
+  id?: string;
+  email: string;
+  role: "admin" | "user";
+  invitedAt: Date;
+  accepted: boolean;
 }

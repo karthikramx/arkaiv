@@ -21,7 +21,11 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full flex items-center justify-between pl-14 pr-4 py-2 bg-white dark:bg-gray-900 shadow">
+    <nav
+      className={`w-full flex items-center justify-between ${
+        user ? "pl-14" : "pl-2"
+      } pr-4 py-2 bg-white dark:bg-gray-900 shadow`}
+    >
       <div className="flex items-center space-x-2">
         <Image
           src="/arkaiv.png"

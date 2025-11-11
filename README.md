@@ -27,6 +27,7 @@ Folder-based organization makes navigation effortless, and the built-in search a
 - **Backend:** [Firebase](https://firebase.google.com) (Auth, Firestore, Storage, Functions)
 - **Deployment:** Vercel / Firebase Hosting
 - **Search:** Firebase queries (with OpenSearch / vector search planned)
+- **Sendgrid** SendGrid for reliable, API-based transactional email delivery.
 
 ### 🚀 Getting Started
 

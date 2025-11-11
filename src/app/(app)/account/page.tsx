@@ -22,17 +22,31 @@ export default function Account() {
   const [inviteEmail, setInviteEmail] = useState("");
 
   const sendUserInvite = async () => {
-    // if inviteEmail is not valid then toast error
-    if (!inviteEmail) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
     await createDocument("invites", { email: inviteEmail, sentAt: new Date() });
 
     console.log(`Inviting ${inviteEmail}`);
     toast(`Invitation sent to ${inviteEmail}`);
     setInviteEmail("");
+
+    const res = await fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: inviteEmail,
+        subject: "You're Invited to Join Our Team!",
+        text: "Hello",
+        html: `<p>You've been invited to join Arkaiv. 
+               <br>Click the link below to accept the invitation:</p>
+               <a href="https://arkaiv.in/signup">Join Arkaiv</a>
+               <p>If you did not expect this invitation, please ignore this email.</p>
+               <p>Best regards,<br/>The Arkaiv Team</p>`,
+      }),
+    });
+
+    if (!res.ok) {
+      console.log("Failed to send invitation email");
+      toast("Failed to send invitation email");
+    }
   };
 
   return (
@@ -79,8 +93,8 @@ export default function Account() {
                     onChange={(e) => setInviteEmail(e.target.value)}
                   />
                   <Button
-                    onClick={async () => {
-                      await sendUserInvite();
+                    onClick={() => {
+                      sendUserInvite();
                     }}
                   >
                     Send Invite

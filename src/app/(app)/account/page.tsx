@@ -28,46 +28,39 @@ export default function Account() {
   const { userDoc }: { userDoc: User | null } = useTeam();
 
   const sendUserInvite = async () => {
-    try {
-      const usersRef = collection(db, "users");
-      const querySnapshot = await getDocs(
-        query(usersRef, where("email", "==", inviteEmail))
-      );
-      if (!querySnapshot.empty) {
-        const invitedUser = querySnapshot.docs[0].data() as User;
-        const isInTeam = invitedUser.teams?.some(
-          (team) => team.teamId === userDoc?.teamDoc?.id
-        );
-        if (isInTeam) {
-          toast(`${inviteEmail} is already in this team`);
-          return;
-        }
-      }
-
-      // If user does not exist, create an invite entry
-    } catch (error) {
-      console.error("Error sending invite:", error);
-    }
-
+    // try {
+    //   const usersRef = collection(db, "users");
+    //   const querySnapshot = await getDocs(
+    //     query(usersRef, where("email", "==", inviteEmail))
+    //   );
+    //   if (!querySnapshot.empty) {
+    //     const invitedUser = querySnapshot.docs[0].data() as User;
+    //     const isInTeam = invitedUser.teams?.some(
+    //       (team) => team.teamId === userDoc?.teamDoc?.id
+    //     );
+    //     if (isInTeam) {
+    //       toast(`${inviteEmail} is already in this team`);
+    //       return;
+    //     }
+    //   }
+    //   // If user does not exist, create an invite entry
+    // } catch (error) {
+    //   console.error("Error sending invite:", error);
+    // }
     // query if the user exists and is part of the team, if yes, say user already in team
     // if user exists but not part of the team, then add team id to user's teams array
-
     // if user does not exist, create an invite entry in the invites collection and send the email
     // with a specific invitation code that can query what team the person was invited to ...
-
     // await createDocument("invites", {
     //   email: inviteEmail,
     //   role: "user",
     //   invitedAt: new Date(),
     //   accepted: false,
     // });
-
     // console.log("here is the user info:", userDoc);
-
     // console.log(`Inviting ${inviteEmail}`);
     // toast(`Invitation sent to ${inviteEmail}`);
     // setInviteEmail("");
-
     // const res = await fetch("/api/send-email", {
     //   method: "POST",
     //   headers: { "Content-Type": "application/json" },
@@ -82,7 +75,6 @@ export default function Account() {
     //            <p>Best regards,<br/>The Arkaiv Team</p>`,
     //   }),
     // });
-
     // if (!res.ok) {
     //   console.log("Failed to send invitation email");
     //   toast("Failed to send invitation email");

@@ -33,13 +33,36 @@ export default function Landing() {
                 Your intelligent vault for every document.
               </h2>
             </div>
-            <Button
-              onClick={() => {
-                router.push("/signup");
-              }}
-            >
-              Get started
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-4">
+              <Button
+                size="lg"
+                onClick={() => {
+                  router.push("/signup");
+                }}
+                className="bg-gray-500 hover:bg-gray-600 text-white"
+              >
+                Get Started
+              </Button>
+
+              <Button
+                size="lg"
+                onClick={() => {
+                  router.push("/login");
+                }}
+                className="bg-gray-500 hover:bg-gray-600 text-white"
+              >
+                Sign In
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => {
+                  router.push("/about");
+                }}
+                className="bg-gray-500 hover:bg-gray-600 text-white"
+              >
+                Learn More
+              </Button>
+            </div>
           </div>
           <div className="flex items-center justify-center">
             <PixelImage

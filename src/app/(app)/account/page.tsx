@@ -17,36 +17,76 @@ import { Shield, Users, MessageSquare, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { createDocument } from "@/lib/firestore";
+import { useAuth } from "@/context/AuthContext";
+import { useTeam } from "@/context/TeamContext";
+import { User } from "@/interfaces";
+import { db } from "@/lib/firebase";
+import { getDocs, where, query, collection } from "firebase/firestore";
 
 export default function Account() {
   const [inviteEmail, setInviteEmail] = useState("");
+  const { userDoc }: { userDoc: User | null } = useTeam();
 
   const sendUserInvite = async () => {
-    await createDocument("invites", { email: inviteEmail, sentAt: new Date() });
+    try {
+      const usersRef = collection(db, "users");
+      const querySnapshot = await getDocs(
+        query(usersRef, where("email", "==", inviteEmail))
+      );
+      if (!querySnapshot.empty) {
+        const invitedUser = querySnapshot.docs[0].data() as User;
+        const isInTeam = invitedUser.teams?.some(
+          (team) => team.teamId === userDoc?.teamDoc?.id
+        );
+        if (isInTeam) {
+          toast(`${inviteEmail} is already in this team`);
+          return;
+        }
+      }
 
-    console.log(`Inviting ${inviteEmail}`);
-    toast(`Invitation sent to ${inviteEmail}`);
-    setInviteEmail("");
-
-    const res = await fetch("/api/send-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: inviteEmail,
-        subject: "You're Invited to Join Our Team!",
-        text: "Hello",
-        html: `<p>You've been invited to join Arkaiv. 
-               <br>Click the link below to accept the invitation:</p>
-               <a href="https://arkaiv.in/signup">Join Arkaiv</a>
-               <p>If you did not expect this invitation, please ignore this email.</p>
-               <p>Best regards,<br/>The Arkaiv Team</p>`,
-      }),
-    });
-
-    if (!res.ok) {
-      console.log("Failed to send invitation email");
-      toast("Failed to send invitation email");
+      // If user does not exist, create an invite entry
+    } catch (error) {
+      console.error("Error sending invite:", error);
     }
+
+    // query if the user exists and is part of the team, if yes, say user already in team
+    // if user exists but not part of the team, then add team id to user's teams array
+
+    // if user does not exist, create an invite entry in the invites collection and send the email
+    // with a specific invitation code that can query what team the person was invited to ...
+
+    // await createDocument("invites", {
+    //   email: inviteEmail,
+    //   role: "user",
+    //   invitedAt: new Date(),
+    //   accepted: false,
+    // });
+
+    // console.log("here is the user info:", userDoc);
+
+    // console.log(`Inviting ${inviteEmail}`);
+    // toast(`Invitation sent to ${inviteEmail}`);
+    // setInviteEmail("");
+
+    // const res = await fetch("/api/send-email", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     to: inviteEmail,
+    //     subject: "You're Invited to Join Our Team!",
+    //     text: "Hello",
+    //     html: `<p>You've been invited to join Arkaiv.
+    //            <br>Click the link below to accept the invitation:</p>
+    //            <a href="https://arkaiv.in/signup">Join Arkaiv</a>
+    //            <p>If you did not expect this invitation, please ignore this email.</p>
+    //            <p>Best regards,<br/>The Arkaiv Team</p>`,
+    //   }),
+    // });
+
+    // if (!res.ok) {
+    //   console.log("Failed to send invitation email");
+    //   toast("Failed to send invitation email");
+    // }
   };
 
   return (

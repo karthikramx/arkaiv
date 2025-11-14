@@ -77,6 +77,8 @@ export interface Folder {
     parentFolderId: string | null;
   }[];
 }
+
+// Invite Interface
 export interface Invite {
   id?: string;
   email: string;

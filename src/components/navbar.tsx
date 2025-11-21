@@ -1,37 +1,34 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+// import { Input } from "@/components/ui/input";
+// import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
+// import { useState } from "react";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
 
   const handleAuthAction = async () => {
     console.log("clicking the button");
     if (user) {
       // Logout user
       await logout();
-      console.log("User logged out successfully");
-    } else {
-      // Redirect to login
-      router.push("/login");
+      router.push("/");
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Handle search functionality here
-      console.log("Searching for:", searchQuery);
-      // You can implement search logic or navigation here
-    }
-  };
+  // const handleSearch = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (searchQuery.trim()) {
+  //     // Handle search functionality here
+  //     console.log("Searching for:", searchQuery);
+  //     // You can implement search logic or navigation here
+  //   }
+  // };
 
   return (
     <nav
@@ -74,17 +71,15 @@ export default function Navbar() {
       )} */}
 
       {/* Auth Button */}
-      {/* <Button
-        onClick={handleAuthAction}
-        className={`text-sm font-medium ${
-          user
-            ? "bg-gray-700 hover:bg-gray-600 text-white"
-            : "bg-gray-700 hover:bg-gray-600 text-white"
-        }`}
-        size="sm"
-      >
-        {user ? "Logout" : "Login"}
-      </Button> */}
+      {user && (
+        <Button
+          onClick={handleAuthAction}
+          className="text-sm font-medium bg-gray-700 hover:bg-gray-600 text-white"
+          size="sm"
+        >
+          Logout
+        </Button>
+      )}
     </nav>
   );
 }

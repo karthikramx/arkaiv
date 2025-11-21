@@ -108,7 +108,7 @@ export function NavUser({
                 const response = await logout();
                 if (response.resp) {
                   toast("User Logged Out");
-                  router.push("/login");
+                  router.push("/");
                 } else if (!response.resp) {
                   toast("Failed to logout user");
                 }

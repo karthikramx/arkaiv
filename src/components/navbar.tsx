@@ -53,15 +53,11 @@ export default function Navbar() {
           onClick={() => router.push("/")}
           className="text-xl font-semibold text-gray-900 dark:text-white cursor-pointer"
         >
-          Ark
-          <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
-            ai
-          </span>
-          v
+          Your Company Name + Logo
         </span>
       </div>
 
-      {/* Search Bar - Only show when user is logged in */}
+      {/* Search Bar - Only show when user is logged in
       {user && (
         <div className="flex-1 max-w-md mx-8">
           <form onSubmit={handleSearch} className="relative">
@@ -75,10 +71,10 @@ export default function Navbar() {
             />
           </form>
         </div>
-      )}
+      )} */}
 
       {/* Auth Button */}
-      <Button
+      {/* <Button
         onClick={handleAuthAction}
         className={`text-sm font-medium ${
           user
@@ -88,7 +84,7 @@ export default function Navbar() {
         size="sm"
       >
         {user ? "Logout" : "Login"}
-      </Button>
+      </Button> */}
     </nav>
   );
 }

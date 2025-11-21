@@ -1,97 +1,107 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { PixelImage } from "@/components/ui/shadcn-io/pixel-image";
-import { useAuth } from "@/context/AuthContext";
-import { useEffect } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Building, Shield, Users } from "lucide-react";
 
 export default function Landing() {
-  const router = useRouter();
-  const { user } = useAuth();
-
-  console.log("Landing page user:", user);
-
-  useEffect(() => {
-    if (user) router.push("/home");
-  }, [user, router]);
-
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex flex-1 items-center justify-center">
-        <section className="container flex flex-col gap-10 text-center lg:items-center lg:gap-8 mt-[-150px]">
-          <div className="flex flex-1 flex-col items-center gap-5 text-center lg:gap-8">
-            <div>
-              <h1 className="text-4xl font-bold lg:text-6xl">
-                Meet Ark
-                <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
-                  ai
-                </span>
-                v
-              </h1>
-              <h2 className="text-lg font-light text-muted-foreground lg:text-3xl">
-                Your intelligent vault for every document.
-              </h2>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-4">
-              <Button
-                size="lg"
-                onClick={() => {
-                  router.push("/signup");
-                }}
-                className="bg-gray-500 hover:bg-gray-600 text-white"
-              >
-                Get Started
-              </Button>
-
-              <Button
-                size="lg"
-                onClick={() => {
-                  router.push("/login");
-                }}
-                className="bg-gray-500 hover:bg-gray-600 text-white"
-              >
-                Sign In
-              </Button>
-              <Button
-                size="lg"
-                onClick={() => {
-                  router.push("/about");
-                }}
-                className="bg-gray-500 hover:bg-gray-600 text-white"
-              >
-                Learn More
-              </Button>
-            </div>
-          </div>
-          <div className="flex items-center justify-center">
-            <PixelImage
-              src="https://imageio.forbes.com/specials-images/imageserve/923561924/digital-library-covid-19/960x0.jpg?format=jpg&width=960"
-              grid="6x4"
-            />
-          </div>
-          {/* <div className="flex items-center justify-center">
-            <p>
-              Arkaiv is a secure digital workspace that lets individuals and
-              businesses store, organize, and intelligently manage all their
-              important documents in one place. From identity proofs to bank
-              statements, Arkaiv uses AI-powered categorization to ensure your
-              files are always where you need them, when you need them.
+      <main className="flex flex-1 justify-center pt-40">
+        <section className="container max-w-6xl">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold tracking-tight mb-4">
+              Welcome to Atrium
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              Choose your login type to access the platform
             </p>
-          </div> */}
+          </div>
+
+          {/* Login Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {/* Admin Login Card */}
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <Shield className="h-6 w-6 text-red-600" />
+                </div>
+                <CardTitle className="text-xl">Admin Login</CardTitle>
+                <CardDescription>
+                  Access administrative controls and system management
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <button
+                    className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors"
+                    onClick={() => {
+                      window.location.href = "/login?role=admin";
+                    }}
+                  >
+                    Login as Admin
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Employee Login Card */}
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
+                <CardTitle className="text-xl">Employee Login</CardTitle>
+                <CardDescription>
+                  Access your employee dashboard and company resources
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <button
+                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                    onClick={() => {
+                      window.location.href = "/login?role=employee";
+                    }}
+                  >
+                    Login as Employee
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contractor Login Card */}
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <Building className="h-6 w-6 text-green-600" />
+                </div>
+                <CardTitle className="text-xl">Contractor Login</CardTitle>
+                <CardDescription>
+                  Access contractor portal and project information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <button
+                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                    onClick={() => {
+                      window.location.href = "/login?role=contractor";
+                    }}
+                  >
+                    Login as Contractor
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </section>
       </main>
-
-      {/* Footer (fixed at bottom) */}
-      <footer className="fixed bottom-0 left-0 w-full bg-transparent py-3">
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between text-sm text-gray-600 dark:text-gray-400 px-6">
-          <p>© {new Date().getFullYear()} Arkaiv. All rights reserved.</p>
-          <p className="flex items-center gap-1">
-            <span className="text-red-600"></span> Made with 99% Caffine and 1%
-            Love
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

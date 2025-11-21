@@ -33,6 +33,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }, [user, router]);
 
   useEffect(() => {
+    if (user?.emailVerified === false) {
+      console.log("User email not verified, redirecting to verify-email page");
+      router.push("/verifyemail");
+    }
+  }, [user, router]);
+
+  useEffect(() => {
     if (currentFolderLineage?.length >= 0) {
       console.log("📚 FolderContext lineage updated:", currentFolderLineage);
     }

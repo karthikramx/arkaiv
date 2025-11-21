@@ -14,6 +14,7 @@ import {
 } from "firebase/auth";
 import { Spinner } from "@/components/ui/spinner";
 import { ChildrenProps } from "@/interfaces";
+import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +31,7 @@ interface AuthContextType {
   forgotPassword: (
     email: string
   ) => Promise<{ resp: void | null; error: Error | null }>;
+  sendVerificationEmail: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -38,6 +40,7 @@ const AuthContext = createContext<AuthContextType>({
   signup: async () => ({ user: null, error: null }),
   logout: async () => ({ resp: null, error: null }),
   forgotPassword: async () => ({ resp: null, error: null }),
+  sendVerificationEmail: async () => {},
 });
 
 export function AuthProvider({ children }: ChildrenProps) {
@@ -86,17 +89,25 @@ export function AuthProvider({ children }: ChildrenProps) {
       // updating the profile with display name
       await updateProfile(userCredential.user, { displayName: name });
 
-      // TODO: Add pages to collection more data like
-      // 1. Individual or Team - Get Company Name
-      // 2. Get some questions for insights and analytics
-      // 3. Store this on users collection !
-
-      // TODO: Add users to users collection
+      // send email verification
+      await sendEmailVerification(userCredential.user);
 
       return { user: userCredential.user, error: null };
     } catch (error) {
       console.log("Signup Failed:", error);
       return { user: null, error: error as Error };
+    }
+  };
+
+  // Send Email Verification
+  const sendVerificationEmail = async () => {
+    if (auth.currentUser) {
+      try {
+        await sendEmailVerification(auth.currentUser);
+        toast("Verification email sent. Please check your inbox.");
+      } catch (error) {
+        console.log("Failed to send verification email:", error);
+      }
     }
   };
 
@@ -121,8 +132,6 @@ export function AuthProvider({ children }: ChildrenProps) {
     }
   };
 
-  // console.log("User value from Context, ", user);
-
   // Only render after hydration and Firebase state is ready
   if (!hydrated || loading)
     return (
@@ -133,7 +142,14 @@ export function AuthProvider({ children }: ChildrenProps) {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, signup, logout, forgotPassword }}
+      value={{
+        user,
+        login,
+        signup,
+        logout,
+        forgotPassword,
+        sendVerificationEmail,
+      }}
     >
       {children}
     </AuthContext.Provider>

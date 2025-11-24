@@ -29,7 +29,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!router) return;
-    if (!user) router.push("/login");
+    if (!user) router.push("/");
   }, [user, router]);
 
   useEffect(() => {

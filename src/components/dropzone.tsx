@@ -90,16 +90,18 @@ export default function Dropzone() {
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
+      console.log("trying to upload files:", acceptedFiles);
       try {
         if (!userDoc?.currentTeam) {
-          toast("Erro Uploading Document - Please Contact Support!");
+          toast("Error Uploading Document - Please Contact Support!");
           return;
         }
 
         setUploading(true);
 
         for (const file of acceptedFiles) {
-          const fileRef = ref(storage, `documents/${file.name}`);
+          const id = crypto.randomUUID();
+          const fileRef = ref(storage, `documents/${id}-${file.name}`);
           await uploadBytes(fileRef, file);
           const url = await getDownloadURL(fileRef);
           const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(2); // file size calc - MB

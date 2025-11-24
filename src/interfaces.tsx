@@ -38,7 +38,7 @@ export interface User {
   userId: string;
   email: string;
   imageUrl: string;
-  accountType: string;
+  role: string;
   currentTeam: string;
   teams: Array<{
     teamId: string;

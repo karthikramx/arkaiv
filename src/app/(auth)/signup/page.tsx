@@ -67,9 +67,8 @@ export default function Page() {
                     name: userName,
                     userId: response?.user?.uid,
                     email: email,
-                    avatar: "",
-                    accountType: "",
-                    plan: "",
+                    role: "admin",
+                    imageUrl: "",
                     currentTeam: teamId,
                     teams: [
                       {

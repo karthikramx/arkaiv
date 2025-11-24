@@ -39,14 +39,12 @@ export interface User {
   email: string;
   imageUrl: string;
   accountType: string;
-  plan: string;
   currentTeam: string;
   teams: Array<{
     teamId: string;
     role: string;
-    logo: string;
+    imageUrl: string;
     name: string;
-    plan: string;
   }>;
   createdAt?: Date;
 }

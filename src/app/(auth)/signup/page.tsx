@@ -52,14 +52,12 @@ export default function Page() {
                 if (response.user) {
                   toast("Sign up successful!");
 
-                  // creating default team for each user
+                  // Creating a space on signup - a self team
                   const teamId = await createDocument("teams", {
                     name: "My Archive", // self team
                     createdById: response?.user?.uid,
                     createdByEmail: response?.user?.email,
                     type: "self",
-                    order: 0,
-                    plan: "free",
                     imageUrl: "",
                     createdAt: serverTimestamp(),
                   });
@@ -72,8 +70,15 @@ export default function Page() {
                     avatar: "",
                     accountType: "",
                     plan: "",
-                    cuurentTeam: teamId,
-                    teams: [{ teamId: teamId, role: "admin" }],
+                    currentTeam: teamId,
+                    teams: [
+                      {
+                        teamId: teamId,
+                        role: "admin",
+                        name: "My Archive",
+                        imageUrl: "",
+                      },
+                    ],
                     createdAt: serverTimestamp(),
                   });
 

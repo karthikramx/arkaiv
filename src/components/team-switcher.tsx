@@ -26,15 +26,13 @@ export function TeamSwitcher({
 }: {
   teams: {
     name: string;
-    logo: React.ElementType | string;
-    plan: string;
-    id: string;
+    imageUrl: React.ElementType | string;
     teamId?: string;
+    logo: string;
   }[];
   activeTeam: {
     name: string;
-    logo: string;
-    plan: string;
+    imageUrl: string;
     teamId?: string;
   } | null;
   setActiveTeam: (teamId: string) => Promise<void>;
@@ -56,10 +54,10 @@ export function TeamSwitcher({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                {activeTeam.logo ? (
+                {activeTeam.imageUrl ? (
                   <img
-                    src={activeTeam.logo}
-                    alt={activeTeam.teamId || activeTeam.name}
+                    src={activeTeam.imageUrl}
+                    alt={activeTeam.teamId}
                     className="size-4"
                   />
                 ) : (
@@ -68,7 +66,6 @@ export function TeamSwitcher({
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{activeTeam.name}</span>
-                <span className="truncate text-xs">{activeTeam.plan}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -86,21 +83,21 @@ export function TeamSwitcher({
               <DropdownMenuItem
                 key={index}
                 onClick={async () => {
-                  console.log("setting team with", team);
-                  console.log("passing id:", team.teamId || team.id);
-                  await setActiveTeam(team.teamId || team.id);
+                  if (team.teamId) {
+                    await setActiveTeam(team.teamId);
+                  }
                 }}
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-md border">
-                  {typeof team.logo === "string" ? (
+                  {team.imageUrl ? (
                     <img
-                      src={team.logo}
-                      alt={team.teamId || team.id}
+                      src={team.imageUrl}
+                      alt={team.teamId}
                       className="size-3.5 shrink-0"
                     />
                   ) : (
-                    <team.logo className="size-3.5 shrink-0" />
+                    <div className="size-4" />
                   )}
                 </div>
                 {team.name}

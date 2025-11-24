@@ -147,13 +147,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userDoc, createTeam, switchTeam } = useTeam();
   const [createTeamDialog, setCreateTeamDialog] = useState(false);
   const [teamName, setTeamName] = useState("Team X");
-
   const [activeTeam, setActiveTeam] = React.useState<{
     teamId: string;
-    role: string;
-    logo: string;
+    imageUrl: string;
     name: string;
-    plan: string;
   } | null>(null);
 
   data.user.email = user?.email ?? "";
@@ -164,7 +161,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const currentTeam = userDoc?.teams.find(
       (t) => t.teamId === userDoc?.currentTeam
     );
-    setActiveTeam(currentTeam || null);
+    if (currentTeam) {
+      setActiveTeam(currentTeam);
+    }
   }, [userDoc]);
 
   const onAddTeamHander = async () => {
@@ -177,13 +176,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarHeader>
           <TeamSwitcher
             teams={
-              userDoc?.teams
-                ? userDoc.teams.map((team) => ({
-                    ...team,
-                    id: team.teamId,
-                    logo: GalleryVerticalEnd, // Default icon for user teams
-                  }))
-                : data.teams
+              userDoc?.teams?.map((team) => ({
+                ...team,
+                logo: GalleryVerticalEnd,
+              })) || []
             }
             activeTeam={activeTeam}
             setActiveTeam={switchTeam}

@@ -41,9 +41,8 @@ export function TeamProvider({ children }: ChildrenProps) {
     const teamId = await createDocument("teams", {
       name: name,
       createdById: user?.uid,
+      createdByEmail: user?.email,
       type: type,
-      order: 0,
-      plan: "free",
       imageUrl: "",
       createdAt: serverTimestamp(),
     });
@@ -59,8 +58,7 @@ export function TeamProvider({ children }: ChildrenProps) {
           teamId: teamId,
           role: "admin",
           name: name,
-          logo: "",
-          plan: "free",
+          imageUrl: "",
         }),
         currentTeam: teamId,
       });

@@ -588,6 +588,11 @@ export default function Dropzone() {
                       <Button
                         type="submit"
                         onClick={async () => {
+                          console.log(
+                            "Creating folder in team:",
+                            userDoc?.currentTeam
+                          );
+                          console.log(userDoc);
                           if (userDoc?.currentTeam) {
                             await createFolder(
                               newFolderName,

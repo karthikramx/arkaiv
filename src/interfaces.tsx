@@ -21,7 +21,8 @@ export interface Document {
   uploadedBy: string;
   uploadedByName: string;
   uploadedByEmail: string;
-  team: string;
+  teamId: string;
+  folderId: string;
   size: string;
   summary: string;
   description: string;
@@ -61,6 +62,11 @@ export interface Team {
   createdAt: Date;
 }
 // Folder Interface
+export interface FolderPermission {
+  role: "ADMIN" | "EMPLOYEE" | "CONTRACTOR";
+  actions: ("view" | "edit" | "delete")[];
+}
+
 export interface Folder {
   id: string;
   name: string;
@@ -68,6 +74,11 @@ export interface Folder {
   teamId?: string;
   createdBy?: string;
   createdAt?: Date;
+  permissions: FolderPermission[];
+  contractorAccess: string[]; // Array of contractor user IDs
+  inheritPermissions: boolean; // Whether to inherit from parent folder
+  tags: string[];
+  color: "blue" | "green" | "purple" | "orange" | "red" | "yellow" | "gray";
   lineage?: {
     id: string;
     name: string;

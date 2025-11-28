@@ -9,7 +9,8 @@ import { useDropzone } from "react-dropzone";
 import { useTeam } from "@/context/TeamContext";
 import { useAuth } from "@/context/AuthContext";
 import { deleteStoredDocument } from "@/services/document";
-import { createFolder } from "@/services/folder";
+import CreateFolderDialog from "@/components/create-folder-dialog";
+import ManageFolderPermissions from "@/components/manage-folder-permissions";
 
 // Firebase and Firestore imports
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -19,21 +20,12 @@ import {
   query,
   onSnapshot,
   where,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
 import { createDocument, deleteDocument } from "@/lib/firestore";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { filterFoldersByPermissions } from "@/utils/permissions";
 
 export default function FoldersViewPort() {
   const params = useParams();
@@ -42,8 +34,11 @@ export default function FoldersViewPort() {
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
+  const [filteredFolders, setFilteredFolders] = useState<Folder[]>([]);
   const [createFolderDialog, setCreateFolderDialog] = useState(false);
-  const [newFolderName, setNewFolderName] = useState("untitled");
+  const [currentFolder, setCurrentFolder] = useState<Folder | null>(null);
+  const [permissionsDialog, setPermissionsDialog] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
 
   const { user } = useAuth();
   const { userDoc }: { userDoc: User | null } = useTeam();
@@ -70,6 +65,17 @@ export default function FoldersViewPort() {
     return () => unsubscribe();
   }, [userDoc, folderId]);
 
+  // Filter folders based on user permissions
+  useEffect(() => {
+    if (!userDoc || folders.length === 0) {
+      setFilteredFolders([]);
+      return;
+    }
+
+    const filtered = filterFoldersByPermissions(folders, userDoc);
+    setFilteredFolders(filtered);
+  }, [folders, userDoc]);
+
   // get all the docs for this folder
   useEffect(() => {
     if (!userDoc?.currentTeam) return;
@@ -90,6 +96,29 @@ export default function FoldersViewPort() {
 
     return () => unsubscribe();
   }, [userDoc, folderId]);
+
+  // Fetch current folder data for RBAC context
+  useEffect(() => {
+    if (!folderId || folderId === "home") {
+      setCurrentFolder(null);
+      return;
+    }
+
+    const fetchCurrentFolder = async () => {
+      try {
+        const folderRef = doc(db, "folders", folderId);
+        const folderDoc = await getDoc(folderRef);
+
+        if (folderDoc.exists()) {
+          setCurrentFolder({ id: folderDoc.id, ...folderDoc.data() } as Folder);
+        }
+      } catch (error) {
+        console.error("Error fetching folder:", error);
+      }
+    };
+
+    fetchCurrentFolder();
+  }, [folderId]);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -212,36 +241,70 @@ export default function FoldersViewPort() {
 
           {/*Folders View*/}
           <div className="p-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-5">
-            {folders.map((folder) => (
+            {filteredFolders.map((folder) => (
               <ContextMenuComponent
                 key={folder.id}
                 items={[
                   {
+                    label: "Open",
+                    onClick: () => router.push(`/folder/${folder.id}`),
+                  },
+                  {
+                    label: "Manage Permissions",
+                    onClick: () => {
+                      setSelectedFolder(folder);
+                      setPermissionsDialog(true);
+                    },
+                  },
+                  {
                     label: "Delete Folder",
                     onClick: async () => deleteFolder(folderId),
-                  },
-                  {
-                    label: "Delete",
-                    onClick: () => console.log("Delete clicked"),
-                  },
-                  {
-                    label: "Share",
-                    onClick: () => console.log("Share clicked"),
                   },
                 ]}
               >
                 <div
                   key={folder.id}
-                  className="bg-blue-100 relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
+                  className={`relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer ${
+                    folder.color === "blue"
+                      ? "bg-blue-100"
+                      : folder.color === "green"
+                      ? "bg-green-100"
+                      : folder.color === "purple"
+                      ? "bg-purple-100"
+                      : folder.color === "orange"
+                      ? "bg-orange-100"
+                      : folder.color === "red"
+                      ? "bg-red-100"
+                      : folder.color === "yellow"
+                      ? "bg-yellow-100"
+                      : "bg-gray-100"
+                  }`}
                   title={folder.name}
                   onDoubleClick={() => {
                     router.push(`/folder/${folder.id}`);
                   }}
                 >
-                  <div className="flex-1 flex items-center justify-center w-full h-full p-3">
+                  <div className="flex-1 flex flex-col items-center justify-center w-full h-full p-3">
                     <div>
                       <span className="text-xs text-gray-400">FOLDER</span>
                     </div>
+                    {folder.tags && folder.tags.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1 justify-center">
+                        {folder.tags.slice(0, 2).map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-1 py-0.5 text-xs bg-white bg-opacity-70 rounded text-gray-600"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {folder.tags.length > 2 && (
+                          <span className="px-1 py-0.5 text-xs bg-white bg-opacity-70 rounded text-gray-600">
+                            +{folder.tags.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="w-full text-center py-2 border-t bg-gray-50">
@@ -254,56 +317,12 @@ export default function FoldersViewPort() {
             ))}
           </div>
 
-          <Dialog
+          <CreateFolderDialog
             open={createFolderDialog}
             onOpenChange={setCreateFolderDialog}
-          >
-            <form>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Create a new Team</DialogTitle>
-                  <DialogDescription>
-                    Create a new Team by entering its name and type. This action
-                    can be undone by deleting the team
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4">
-                  <div className="grid gap-3">
-                    <Label>Folder Name</Label>
-                    <Input
-                      id="name-1"
-                      name="name"
-                      defaultValue={newFolderName}
-                      onChange={(e) => {
-                        setNewFolderName(e.target.value);
-                      }}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button
-                    type="submit"
-                    onClick={async () => {
-                      if (userDoc?.currentTeam) {
-                        await createFolder(
-                          newFolderName,
-                          folderId,
-                          userDoc?.currentTeam
-                        );
-                      }
-                      setCreateFolderDialog(false);
-                      setNewFolderName("untitled");
-                    }}
-                  >
-                    Create Folder
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </form>
-          </Dialog>
+            parentFolderId={folderId}
+            parentFolder={currentFolder}
+          />
 
           {/*Document Views*/}
           <div className="p-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-5">
@@ -348,6 +367,21 @@ export default function FoldersViewPort() {
           </div>
         </div>
       </ContextMenuComponent>
+
+      <CreateFolderDialog
+        open={createFolderDialog}
+        onOpenChange={setCreateFolderDialog}
+        parentFolderId={folderId}
+        parentFolder={currentFolder}
+      />
+
+      {selectedFolder && (
+        <ManageFolderPermissions
+          open={permissionsDialog}
+          onOpenChange={setPermissionsDialog}
+          folder={selectedFolder}
+        />
+      )}
     </div>
   );
 }

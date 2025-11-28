@@ -1,4 +1,5 @@
 import { db } from "@/lib/firebase";
+import { FolderPermission } from "@/interfaces";
 import {
   collection,
   doc,
@@ -10,7 +11,14 @@ import {
 export async function createFolder(
   name: string,
   parentFolderId: string | null,
-  teamId: string
+  teamId: string,
+  rbacOptions?: {
+    permissions?: FolderPermission[];
+    contractorAccess?: string[];
+    inheritPermissions?: boolean;
+    tags?: string[];
+    color?: string;
+  }
 ) {
   const newFolderRef = doc(collection(db, "folders"));
 
@@ -34,6 +42,13 @@ export async function createFolder(
     path = name.replace(/\s+/g, "-").toLowerCase();
   }
 
+  // Default permissions if none provided
+  const defaultPermissions: FolderPermission[] = [
+    { role: "ADMIN", actions: ["view", "edit", "delete"] },
+    { role: "EMPLOYEE", actions: ["view"] },
+    { role: "CONTRACTOR", actions: ["view"] },
+  ];
+
   const folder = {
     id: newFolderRef.id,
     name,
@@ -41,6 +56,18 @@ export async function createFolder(
     parentFolderId,
     lineage,
     teamId,
+    permissions: rbacOptions?.permissions || defaultPermissions,
+    contractorAccess: rbacOptions?.contractorAccess || [],
+    inheritPermissions: rbacOptions?.inheritPermissions || false,
+    tags: rbacOptions?.tags || [],
+    color: (rbacOptions?.color || "blue") as
+      | "blue"
+      | "green"
+      | "purple"
+      | "orange"
+      | "red"
+      | "yellow"
+      | "gray",
     createdAt: serverTimestamp(),
   };
 

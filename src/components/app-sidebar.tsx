@@ -65,6 +65,10 @@ const data = {
           title: "Project",
           url: "/project-settings",
         },
+        {
+          title: "Account",
+          url: "/account",
+        },
       ],
     },
   ],

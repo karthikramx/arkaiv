@@ -13,10 +13,7 @@ import { storage, db } from "@/lib/firebase";
 import { useDropzone } from "react-dropzone";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -38,7 +35,6 @@ import {
 } from "@/components/ui/context-menu";
 import { toast } from "sonner";
 import { deleteStoredDocument } from "@/services/document";
-import { Label } from "@radix-ui/react-dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -58,17 +54,13 @@ import { Save } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 import TagSelector from "@/components/ui/tag-selector";
 import { getChangedFields } from "@/lib/utils";
+import { filterFoldersByPermissions } from "@/utils/permissions";
 
-import { Document } from "@/interfaces";
-import { User } from "@/interfaces";
+import { Document, User, Folder } from "@/interfaces";
 import { useTeam } from "@/context/TeamContext";
 import { useRouter } from "next/navigation";
-import { createFolder } from "@/services/folder";
-
-interface Folder {
-  id: string;
-  name: string;
-}
+import CreateFolderDialog from "./create-folder-dialog";
+import ManageFolderPermissions from "./manage-folder-permissions";
 
 export default function Dropzone() {
   const [uploading, setUploading] = useState(false);
@@ -83,8 +75,10 @@ export default function Dropzone() {
   const { user } = useAuth();
   const { userDoc }: { userDoc: User | null } = useTeam();
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [newFolderName, setNewFolderName] = useState("untitled");
+  const [filteredFolders, setFilteredFolders] = useState<Folder[]>([]);
   const [createFolderDialog, setCreateFolderDialog] = useState(false);
+  const [permissionsDialog, setPermissionsDialog] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const allTags = ["test", "test2", "test3"];
   const router = useRouter();
 
@@ -160,13 +154,24 @@ export default function Dropzone() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const folders = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...(doc.data() as Omit<Document, "id">),
+        ...(doc.data() as Omit<Folder, "id">),
       }));
       setFolders(folders);
     });
 
     return () => unsubscribe();
   }, [userDoc]);
+
+  // Filter folders based on user permissions
+  useEffect(() => {
+    if (!userDoc || folders.length === 0) {
+      setFilteredFolders([]);
+      return;
+    }
+
+    const filtered = filterFoldersByPermissions(folders, userDoc);
+    setFilteredFolders(filtered);
+  }, [folders, userDoc]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -205,21 +210,52 @@ export default function Dropzone() {
             )}
 
             <div className="p-5 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-5">
-              {folders.map((folder) => (
+              {filteredFolders.map((folder) => (
                 <ContextMenu key={folder.id}>
                   <ContextMenuTrigger>
                     <div
                       key={folder.id}
-                      className="bg-blue-100 relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
+                      className={`relative flex flex-col items-center justify-between aspect-[3/4] border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer ${
+                        folder.color === "blue"
+                          ? "bg-blue-100"
+                          : folder.color === "green"
+                          ? "bg-green-100"
+                          : folder.color === "purple"
+                          ? "bg-purple-100"
+                          : folder.color === "orange"
+                          ? "bg-orange-100"
+                          : folder.color === "red"
+                          ? "bg-red-100"
+                          : folder.color === "yellow"
+                          ? "bg-yellow-100"
+                          : "bg-gray-100"
+                      }`}
                       title={folder.name}
                       onDoubleClick={() => {
                         router.push(`/folder/${folder.id}`);
                       }}
                     >
-                      <div className="flex-1 flex items-center justify-center w-full h-full p-3">
+                      <div className="flex-1 flex flex-col items-center justify-center w-full h-full p-3">
                         <div>
                           <span className="text-xs text-gray-400">FOLDER</span>
                         </div>
+                        {folder.tags && folder.tags.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1 justify-center">
+                            {folder.tags.slice(0, 2).map((tag, index) => (
+                              <span
+                                key={index}
+                                className="px-1 py-0.5 text-xs bg-white bg-opacity-70 rounded text-gray-600"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {folder.tags.length > 2 && (
+                              <span className="px-1 py-0.5 text-xs bg-white bg-opacity-70 rounded text-gray-600">
+                                +{folder.tags.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="w-full text-center py-2 border-t bg-gray-50">
@@ -229,13 +265,28 @@ export default function Dropzone() {
                       </div>
                     </div>
                     <ContextMenuContent>
-                      <ContextMenuItem>Open</ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={() => {
+                          router.push(`/folder/${folder.id}`);
+                        }}
+                      >
+                        Open
+                      </ContextMenuItem>
                       <ContextMenuItem>Edit Folder Name</ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={() => {
+                          setSelectedFolder(folder);
+                          setPermissionsDialog(true);
+                        }}
+                      >
+                        Manage Permissions
+                      </ContextMenuItem>
                       <ContextMenuItem
                         onClick={async () => {
                           await deleteDocument("folders", folder.id);
                           toast(`Deleted Folder: ${folder.name}`);
                         }}
+                        className="text-red-600"
                       >
                         Delete Folder
                       </ContextMenuItem>
@@ -557,61 +608,20 @@ export default function Dropzone() {
                 </DialogContent>
               </Dialog>
 
-              <Dialog
+              <CreateFolderDialog
                 open={createFolderDialog}
                 onOpenChange={setCreateFolderDialog}
-              >
-                <form>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Create a new Team</DialogTitle>
-                      <DialogDescription>
-                        Create a new Team by entering its name and type. This
-                        action can be undone by deleting the team
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4">
-                      <div className="grid gap-3">
-                        <Label>Folder Name</Label>
-                        <Input
-                          id="name-1"
-                          name="name"
-                          defaultValue={newFolderName}
-                          onChange={(e) => {
-                            setNewFolderName(e.target.value);
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
-                      </DialogClose>
-                      <Button
-                        type="submit"
-                        onClick={async () => {
-                          console.log(
-                            "Creating folder in team:",
-                            userDoc?.currentTeam
-                          );
-                          console.log(userDoc);
-                          if (userDoc?.currentTeam) {
-                            await createFolder(
-                              newFolderName,
-                              "home",
-                              userDoc?.currentTeam
-                            );
-                          }
-                          setCreateFolderDialog(false);
-                          setNewFolderName("untitled");
-                        }}
-                      >
-                        Create Folder
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </form>
-              </Dialog>
+                parentFolderId="home"
+                parentFolder={null}
+              />
+
+              {selectedFolder && (
+                <ManageFolderPermissions
+                  open={permissionsDialog}
+                  onOpenChange={setPermissionsDialog}
+                  folder={selectedFolder}
+                />
+              )}
             </div>
           </div>
           <ContextMenuContent>

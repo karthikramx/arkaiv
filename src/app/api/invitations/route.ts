@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
     const docRef = await adminDb.collection("invitations").add(inviteData);
 
     // Generate invitation link
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = new URL(request.url).origin;
     const invitationLink = `${baseUrl}/join?invite=${inviteCode}&email=${encodeURIComponent(
       body.email
     )}&type=${body.userType}`;

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Users,
   Copy,
@@ -24,6 +24,16 @@ import {
 import { toast } from "sonner";
 import { useTeam } from "@/context/TeamContext";
 
+interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  imageUrl: string;
+  role: string;
+  joinedAt: string | null;
+  lastActive: string | null;
+}
+
 export default function Account() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLink, setInviteLink] = useState("");
@@ -31,12 +41,76 @@ export default function Account() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [userType, setUserType] = useState("");
   const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
+
+  // Team members state
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const [membersError, setMembersError] = useState<string | null>(null);
+
   const { userDoc, teamDoc } = useTeam();
 
   // Check if current user is admin in current team
   const isCurrentUserAdmin =
     userDoc?.teams?.find((team) => team.teamId === userDoc?.currentTeam)
       ?.role === "admin";
+
+  // Fetch team members
+  const fetchTeamMembers = async (teamId: string) => {
+    if (!teamId) return;
+
+    setIsLoadingMembers(true);
+    setMembersError(null);
+
+    try {
+      const response = await fetch(`/api/teams/${teamId}/members`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch team members");
+      }
+
+      setTeamMembers(data.members || []);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      setMembersError(
+        error instanceof Error ? error.message : "Failed to fetch team members"
+      );
+    } finally {
+      setIsLoadingMembers(false);
+    }
+  };
+
+  // Fetch team members when component mounts or team changes
+  useEffect(() => {
+    if (userDoc?.currentTeam && teamDoc?.type === "team") {
+      fetchTeamMembers(userDoc.currentTeam);
+    } else {
+      // Clear members for personal spaces
+      setTeamMembers([]);
+      setIsLoadingMembers(false);
+      setMembersError(null);
+    }
+  }, [userDoc?.currentTeam, teamDoc?.type]);
+
+  // Format date for display
+  const formatJoinedDate = (dateString: string | null) => {
+    if (!dateString) return "Unknown";
+
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - date.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) return "1 day ago";
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+      if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
+      return `${Math.ceil(diffDays / 365)} years ago`;
+    } catch {
+      return "Unknown";
+    }
+  };
 
   // Validate email format
   const isValidEmail = (email: string) => {
@@ -304,57 +378,64 @@ export default function Account() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="font-medium">Team Members</div>
-                    <Badge variant="secondary">3 members</Badge>
+                    <Badge variant="secondary">
+                      {isLoadingMembers
+                        ? "Loading..."
+                        : `${teamMembers.length} members`}
+                    </Badge>
                   </div>
-                  <div className="space-y-3 max-h-40 overflow-y-auto">
-                    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src="https://via.placeholder.com/40" />
-                          <AvatarFallback>U1</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">user1@example.com</div>
-                          <div className="text-sm text-muted-foreground">
-                            Joined 2 months ago
-                          </div>
-                        </div>
-                      </div>
-                      <Badge>Admin</Badge>
-                    </div>
 
-                    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src="https://via.placeholder.com/40" />
-                          <AvatarFallback>U2</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">user2@example.com</div>
-                          <div className="text-sm text-muted-foreground">
-                            Joined 1 month ago
-                          </div>
-                        </div>
-                      </div>
-                      <Badge variant="secondary">Member</Badge>
+                  {isLoadingMembers ? (
+                    <div className="flex items-center justify-center p-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <span className="ml-2">Loading team members...</span>
                     </div>
-
-                    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src="https://via.placeholder.com/40" />
-                          <AvatarFallback>U3</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">user3@example.com</div>
-                          <div className="text-sm text-muted-foreground">
-                            Joined 2 weeks ago
-                          </div>
-                        </div>
-                      </div>
-                      <Badge variant="secondary">Member</Badge>
+                  ) : membersError ? (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                      Error loading team members: {membersError}
                     </div>
-                  </div>
+                  ) : teamMembers.length === 0 ? (
+                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg text-gray-600">
+                      No team members found.
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-40 overflow-y-auto">
+                      {teamMembers.map((member) => (
+                        <div
+                          key={member.id}
+                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={member.imageUrl} />
+                              <AvatarFallback>
+                                {member.name
+                                  ? member.name.slice(0, 2).toUpperCase()
+                                  : member.email
+                                  ? member.email.slice(0, 2).toUpperCase()
+                                  : "U"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium">
+                                {member.name || member.email}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Joined {formatJoinedDate(member.joinedAt)}
+                              </div>
+                            </div>
+                          </div>
+                          <Badge
+                            variant={
+                              member.role === "admin" ? "default" : "secondary"
+                            }
+                          >
+                            {member.role === "admin" ? "Admin" : "Member"}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

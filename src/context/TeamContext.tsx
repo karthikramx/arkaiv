@@ -48,6 +48,7 @@ export function TeamProvider({ children }: ChildrenProps) {
       createdById: user?.uid,
       createdByEmail: user?.email,
       type: type,
+      members: [user?.uid],
       imageUrl: "",
       createdAt: serverTimestamp(),
     });

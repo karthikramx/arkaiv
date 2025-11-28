@@ -2,13 +2,7 @@
 
 import * as React from "react";
 import { useState } from "react";
-import {
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-} from "lucide-react";
+import { Frame, Map, PieChart, Settings2 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -124,12 +118,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader>
           <TeamSwitcher
-            teams={
-              userDoc?.teams?.map((team) => ({
-                ...team,
-                logo: GalleryVerticalEnd,
-              })) || []
-            }
+            teams={userDoc?.teams || []}
             activeTeam={activeTeam}
             setActiveTeam={switchTeam}
             addTeamHandler={onAddTeamHander}

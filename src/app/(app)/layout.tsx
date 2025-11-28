@@ -19,6 +19,8 @@ import {
 import Link from "next/link";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { FolderProvider, useFolder } from "@/context/FolderContext";
+import { TeamProvider, useTeam } from "@/context/TeamContext";
+import { GlobalLoading } from "@/components/ui/global-loading";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -26,6 +28,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user } = useAuth();
   const { currentFolderLineage } = useFolder();
+  const { isLoading } = useTeam();
 
   useEffect(() => {
     if (!router) return;
@@ -47,6 +50,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
+      <GlobalLoading isLoading={isLoading} />
       <Navbar />
       <SidebarProvider>
         <AppSidebar />
@@ -90,9 +94,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <FolderProvider>
-        <AppContent>{children}</AppContent>
-      </FolderProvider>
+      <TeamProvider>
+        <FolderProvider>
+          <AppContent>{children}</AppContent>
+        </FolderProvider>
+      </TeamProvider>
     </AuthProvider>
   );
 }

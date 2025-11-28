@@ -1,7 +1,6 @@
 "use client";
 
 import Dropzone from "@/components/dropzone";
-import FoldersViewPort from "../folder/[folderId]/page";
 
 export default function Home() {
   return (

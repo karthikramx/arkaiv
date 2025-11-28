@@ -55,9 +55,8 @@ export interface Team {
   name: string;
   createdById: string;
   createdByEmail: string;
-  type: string;
-  order: string;
-  plan: string;
+  members: string[];
+  type?: string;
   imageUrl: string;
   createdAt: Date;
 }

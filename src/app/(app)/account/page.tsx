@@ -20,8 +20,6 @@ import { createDocument } from "@/lib/firestore";
 import { useAuth } from "@/context/AuthContext";
 import { useTeam } from "@/context/TeamContext";
 import { User } from "@/interfaces";
-import { db } from "@/lib/firebase";
-import { getDocs, where, query, collection } from "firebase/firestore";
 
 export default function Account() {
   const [inviteEmail, setInviteEmail] = useState("");

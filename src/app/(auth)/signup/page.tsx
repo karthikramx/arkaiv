@@ -50,13 +50,12 @@ export default function Page() {
                 e.preventDefault();
                 const response = await signup(email, password, userName);
                 if (response.user) {
-                  toast("Sign up successful!");
-
                   // Creating a space on signup - a self team
                   const teamId = await createDocument("teams", {
-                    name: "My Archive", // self team
+                    name: "My Archive",
                     createdById: response?.user?.uid,
                     createdByEmail: response?.user?.email,
+                    members: [response?.user?.uid],
                     type: "self",
                     imageUrl: "",
                     createdAt: serverTimestamp(),
@@ -82,6 +81,7 @@ export default function Page() {
                   });
 
                   router.push("/home");
+                  toast("Sign up successful!");
                 } else if (!response.user) {
                   toast("Failed to Sign you up :/");
                 }

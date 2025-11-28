@@ -3,14 +3,11 @@
 import * as React from "react";
 import { useState } from "react";
 import {
-  AudioWaveform,
-  Command,
   Frame,
   GalleryVerticalEnd,
   Map,
   PieChart,
   Settings2,
-  SquareTerminal,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -58,67 +55,15 @@ const data = {
     avatar:
       "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png",
   },
-  teams: [
-    {
-      id: "1",
-      name: "Acme Inc LALALA",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      id: "2",
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      id: "3",
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
     {
       title: "Settings",
       url: "#",
       icon: Settings2,
       items: [
         {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
+          title: "Project",
+          url: "/project-settings",
         },
       ],
     },

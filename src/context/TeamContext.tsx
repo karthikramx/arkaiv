@@ -15,11 +15,13 @@ import { db } from "@/lib/firebase";
 import { getDocs, where, query, collection } from "firebase/firestore";
 import { User, ChildrenProps, Team } from "@/interfaces";
 import { useAuth } from "./AuthContext";
+import { useRouter } from "next/navigation";
 
 // TeamContext type definition
 interface TeamContextType {
   userDoc: User | null;
-  teamDoc: Team | null; // (replace with a proper Team type later if you have one)
+  teamDoc: Team | null;
+  isLoading: boolean;
   createTeam: (name: string, type: string) => Promise<void>;
   switchTeam: (teamId: string) => Promise<void>;
 }
@@ -27,14 +29,17 @@ interface TeamContextType {
 const TeamContext = createContext<TeamContextType>({
   userDoc: null,
   teamDoc: null,
-  createTeam: async (name: string, type: string) => {},
-  switchTeam: async (teamId: string) => {},
+  isLoading: true,
+  createTeam: async () => {},
+  switchTeam: async () => {},
 });
 
 export function TeamProvider({ children }: ChildrenProps) {
   const [userDoc, setUserDoc] = useState<User | null>(null);
   const [teamDoc, setTeamDoc] = useState<Team | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const router = useRouter();
 
   const createTeam = async (name: string, type: string) => {
     // creating default team for each user
@@ -67,6 +72,8 @@ export function TeamProvider({ children }: ChildrenProps) {
   };
 
   const switchTeam = async (teamId: string) => {
+    setIsLoading(true);
+
     // update the users' current team value
     const usersRef = collection(db, "users") as CollectionReference<User>;
     const q = query(usersRef, where("userId", "==", user?.uid));
@@ -77,20 +84,28 @@ export function TeamProvider({ children }: ChildrenProps) {
         currentTeam: teamId,
       });
     }
-    // navigate to home page after switching team
-    window.location.href = "/home";
+
+    // Navigate to home page after switching team (without page refresh)
+    router.push("/home");
   };
 
   // const deleteTeam = async (id: string) => {};
 
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      setIsLoading(false);
+      return;
+    }
 
+    setIsLoading(true);
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", user.email));
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
-      if (snapshot.empty) return;
+      if (snapshot.empty) {
+        setIsLoading(false);
+        return;
+      }
 
       const doc = snapshot.docs[0];
       const userData = { id: doc.id, ...doc.data() } as User;
@@ -103,13 +118,17 @@ export function TeamProvider({ children }: ChildrenProps) {
         );
         setTeamDoc(teamDocument);
       }
+
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, [user]);
 
   return (
-    <TeamContext.Provider value={{ userDoc, teamDoc, createTeam, switchTeam }}>
+    <TeamContext.Provider
+      value={{ userDoc, teamDoc, isLoading, createTeam, switchTeam }}
+    >
       {children}
     </TeamContext.Provider>
   );

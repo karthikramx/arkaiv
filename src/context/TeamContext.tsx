@@ -94,6 +94,9 @@ export function TeamProvider({ children }: ChildrenProps) {
 
   useEffect(() => {
     if (!user?.email) {
+      // Clear data when user logs out
+      setUserDoc(null);
+      setTeamDoc(null);
       setIsLoading(false);
       return;
     }
@@ -102,29 +105,46 @@ export function TeamProvider({ children }: ChildrenProps) {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", user.email));
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      if (snapshot.empty) {
+    const unsubscribe = onSnapshot(
+      q,
+      async (snapshot) => {
+        if (snapshot.empty) {
+          setUserDoc(null);
+          setTeamDoc(null);
+          setIsLoading(false);
+          return;
+        }
+
+        const doc = snapshot.docs[0];
+        const userData = { id: doc.id, ...doc.data() } as User;
+        setUserDoc(userData);
+
+        if (userData.currentTeam) {
+          const teamDocument = await readDocument<Team>(
+            "teams",
+            userData.currentTeam
+          );
+          setTeamDoc(teamDocument);
+        } else {
+          setTeamDoc(null);
+        }
+
         setIsLoading(false);
-        return;
+      },
+      (error) => {
+        // Handle permission errors gracefully
+        console.warn("Firestore listener error:", error);
+        if (error.code === "permission-denied") {
+          // User likely logged out, clear data
+          setUserDoc(null);
+          setTeamDoc(null);
+        }
+        setIsLoading(false);
       }
-
-      const doc = snapshot.docs[0];
-      const userData = { id: doc.id, ...doc.data() } as User;
-      setUserDoc(userData);
-
-      if (userData.currentTeam) {
-        const teamDocument = await readDocument<Team>(
-          "teams",
-          userData.currentTeam
-        );
-        setTeamDoc(teamDocument);
-      }
-
-      setIsLoading(false);
-    });
+    );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user?.email]); // Use user?.email instead of user to avoid unnecessary re-renders
 
   return (
     <TeamContext.Provider

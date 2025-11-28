@@ -32,11 +32,14 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`w-full flex items-center justify-between ${
+      className={`w-full flex items-center ${
         user ? "pl-14" : "pl-2"
       } pr-4 py-1.5 bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800`}
     >
-      {/* Logo Section */}
+      {/* Left Spacer */}
+      <div className="flex-1"></div>
+
+      {/* Centered Logo Section */}
       <div className="flex items-center space-x-3">
         <Image
           src="/arkaiv.png"
@@ -54,6 +57,19 @@ export default function Navbar() {
         </span>
       </div>
 
+      {/* Right Spacer with Auth Button */}
+      <div className="flex-1 flex justify-end">
+        {user && (
+          <Button
+            onClick={handleAuthAction}
+            className="text-sm font-medium bg-gray-700 hover:bg-gray-600 text-white"
+            size="sm"
+          >
+            Logout
+          </Button>
+        )}
+      </div>
+
       {/* Search Bar - Only show when user is logged in
       {user && (
         <div className="flex-1 max-w-md mx-8">
@@ -69,17 +85,6 @@ export default function Navbar() {
           </form>
         </div>
       )} */}
-
-      {/* Auth Button */}
-      {user && (
-        <Button
-          onClick={handleAuthAction}
-          className="text-sm font-medium bg-gray-700 hover:bg-gray-600 text-white"
-          size="sm"
-        >
-          Logout
-        </Button>
-      )}
     </nav>
   );
 }

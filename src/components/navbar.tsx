@@ -34,7 +34,7 @@ export default function Navbar() {
     <nav
       className={`w-full flex items-center ${
         user ? "pl-14" : "pl-2"
-      } pr-4 py-1.5 bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800`}
+      } pr-4 py-2 bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800`}
     >
       {/* Left Spacer */}
       <div className="flex-1"></div>

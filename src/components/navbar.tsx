@@ -53,7 +53,7 @@ export default function Navbar() {
           onClick={() => router.push("/")}
           className="text-xl font-semibold text-gray-900 dark:text-white cursor-pointer"
         >
-          Your Company Name + Logo
+          Your Company Name + Logo.
         </span>
       </div>
 

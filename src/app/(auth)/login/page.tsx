@@ -90,7 +90,7 @@ export default function Page() {
         roleConfig.bgGradient
       )}
     >
-      <div className="w-full max-w-sm mt-[-350px]">
+      <div className="w-full max-w-sm">
         <div className={cn("flex flex-col gap-6")}>
           <Card className={cn("shadow-lg", roleConfig.cardBorder)}>
             <CardHeader className="text-center">

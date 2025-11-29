@@ -59,7 +59,8 @@ export async function GET(
           name: userData?.name || "",
           email: userData?.email || "",
           imageUrl: userData?.imageUrl || "",
-          role: userTeamInfo?.role || "member",
+          role: userData?.role || "member", // Use user's main role instead of team role
+          teamRole: userTeamInfo?.role || "member", // Keep team role for admin permissions
           joinedAt: userData?.createdAt || null,
           lastActive: userData?.lastActive || null,
         };

@@ -29,7 +29,8 @@ interface TeamMember {
   name: string;
   email: string;
   imageUrl: string;
-  role: string;
+  role: string; // Main user role (admin/employee/contractor)
+  teamRole: string; // Team-specific role (admin/member)
   joinedAt: string | null;
   lastActive: string | null;
 }
@@ -91,26 +92,6 @@ export default function Account() {
       setMembersError(null);
     }
   }, [userDoc?.currentTeam, teamDoc?.type]);
-
-  // Format date for display
-  const formatJoinedDate = (dateString: string | null) => {
-    if (!dateString) return "Unknown";
-
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffTime = Math.abs(now.getTime() - date.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 1) return "1 day ago";
-      if (diffDays < 7) return `${diffDays} days ago`;
-      if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
-      if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
-      return `${Math.ceil(diffDays / 365)} years ago`;
-    } catch {
-      return "Unknown";
-    }
-  };
 
   // Validate email format
   const isValidEmail = (email: string) => {
@@ -203,14 +184,14 @@ export default function Account() {
   };
 
   return (
-    <div className="bg-gray-50/50 p-5">
-      <div className="max-w-10xl mx-auto space-y-5">
+    <div className="bg-gray-50/50 p-5 min-h-screen">
+      <div className="max-w-full mx-auto space-y-5">
         {/* Main Content Grid */}
         <div className="flex justify-center">
           {/* Only show Team Management if not in personal space */}
           {teamDoc?.type !== "self" ? (
             /* Team Management Card */
-            <Card className="w-full max-w-2xl rounded-sm">
+            <Card className="w-full max-w-none rounded-sm">
               <CardHeader className="flex flex-row items-center space-y-0 pb-2">
                 <div className="flex items-center space-x-2">
                   <div className="p-2 bg-green-100 rounded-lg">
@@ -387,7 +368,7 @@ export default function Account() {
 
                   {isLoadingMembers ? (
                     <div className="flex items-center justify-center p-8">
-                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="ml-2">Loading team members...</span>
                     </div>
                   ) : membersError ? (
@@ -399,7 +380,7 @@ export default function Account() {
                       No team members found.
                     </div>
                   ) : (
-                    <div className="space-y-3 max-h-40 overflow-y-auto">
+                    <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                       {teamMembers.map((member) => (
                         <div
                           key={member.id}
@@ -421,17 +402,46 @@ export default function Account() {
                                 {member.name || member.email}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                Joined {formatJoinedDate(member.joinedAt)}
+                                {member.email}
                               </div>
                             </div>
                           </div>
-                          <Badge
-                            variant={
-                              member.role === "admin" ? "default" : "secondary"
-                            }
-                          >
-                            {member.role === "admin" ? "Admin" : "Member"}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={
+                                member.role === "admin"
+                                  ? "default"
+                                  : member.role === "employee"
+                                  ? "secondary"
+                                  : member.role === "contractor"
+                                  ? "outline"
+                                  : "secondary"
+                              }
+                              className={
+                                member.role === "employee"
+                                  ? "bg-blue-100 text-blue-800 border-blue-200"
+                                  : member.role === "contractor"
+                                  ? "bg-green-100 text-green-800 border-green-200"
+                                  : member.role === "admin"
+                                  ? "bg-orange-100 text-orange-800 border-orange-200"
+                                  : ""
+                              }
+                            >
+                              {member.role === "admin"
+                                ? "Admin"
+                                : member.role === "employee"
+                                ? "Employee"
+                                : member.role === "contractor"
+                                ? "Contractor"
+                                : "Member"}
+                            </Badge>
+                            {member.teamRole === "admin" &&
+                              member.role !== "admin" && (
+                                <Badge variant="default" className="text-xs">
+                                  Team Admin
+                                </Badge>
+                              )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -441,7 +451,7 @@ export default function Account() {
             </Card>
           ) : (
             /* Personal Space Message */
-            <Card className="w-full max-w-2xl rounded-sm">
+            <Card className="w-full max-w-none rounded-sm">
               <CardHeader className="flex flex-row items-center space-y-0 pb-2">
                 <div className="flex items-center space-x-2">
                   <div className="p-2 bg-blue-100 rounded-lg">

@@ -15,9 +15,6 @@ export default function Landing() {
       <main className="flex flex-1 justify-center pt-40">
         <section className="container max-w-6xl">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold tracking-tight mb-4">
-              Welcome to Atrium
-            </h1>
             <p className="text-xl text-muted-foreground">
               Choose your login type to access the platform
             </p>

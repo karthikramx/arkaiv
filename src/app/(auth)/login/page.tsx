@@ -9,12 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
@@ -26,6 +21,7 @@ export default function Page() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -46,8 +42,9 @@ export default function Page() {
           iconColor: "text-red-600",
           buttonStyle: "bg-red-600 hover:bg-red-700",
           icon: Shield,
-          title: "Admin Login",
-          description: "Access administrative controls and system management",
+          title: "Admin Portal",
+          description:
+            "Administrative access only. Manage system settings, users, and permissions.",
         };
       case "contractor":
         return {
@@ -58,8 +55,9 @@ export default function Page() {
           iconColor: "text-green-600",
           buttonStyle: "bg-green-600 hover:bg-green-700",
           icon: Building,
-          title: "Contractor Login",
-          description: "Access contractor portal and project information",
+          title: "Contractor Portal",
+          description:
+            "Contractor access only. Access assigned projects and documents.",
         };
       case "employee":
       default:
@@ -71,8 +69,9 @@ export default function Page() {
           iconColor: "text-blue-600",
           buttonStyle: "bg-blue-600 hover:bg-blue-700",
           icon: Users,
-          title: "Employee Login",
-          description: "Access your employee dashboard and company resources",
+          title: "Employee Portal",
+          description:
+            "Employee access only. Access company resources and team documents.",
         };
     }
   };
@@ -112,13 +111,54 @@ export default function Page() {
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  const response = await login(email, password);
-                  if (!response.error) {
-                    toast("Login Successful");
-                    router.push("/home");
-                  } else if (response.error) {
-                    console.log("From the login component, raise toast there");
-                    toast("Login Failed, Please check your credentials");
+                  setIsLoading(true);
+
+                  try {
+                    // Step 1: Validate user role before authentication
+                    const roleValidation = await fetch(
+                      "/api/auth/validate-role",
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          email: email,
+                          requiredRole: role,
+                        }),
+                      }
+                    );
+
+                    const roleResult = await roleValidation.json();
+
+                    console.log("Verifying role for user:", email);
+                    console.log("Required role:", role);
+                    console.log("Role validation result:", roleResult);
+
+                    if (!roleResult.isValid) {
+                      toast.error(
+                        roleResult.error || "Access denied for this portal"
+                      );
+                      setIsLoading(false);
+                      return;
+                    }
+
+                    // Step 2: Proceed with Firebase authentication
+                    const response = await login(email, password);
+
+                    if (!response.error) {
+                      toast.success("Login Successful");
+                      router.push("/home");
+                    } else {
+                      toast.error(
+                        "Login Failed. Please check your credentials."
+                      );
+                    }
+                  } catch (error) {
+                    console.error("Login error:", error);
+                    toast.error("Login failed. Please try again.");
+                  } finally {
+                    setIsLoading(false);
                   }
                 }}
               >
@@ -159,22 +199,29 @@ export default function Page() {
                         "w-full text-white",
                         roleConfig.buttonStyle
                       )}
-                      onClick={() => {}}
+                      disabled={isLoading}
                     >
-                      Login as {role.charAt(0).toUpperCase() + role.slice(1)}
+                      {isLoading
+                        ? "Validating..."
+                        : `Login as ${
+                            role.charAt(0).toUpperCase() + role.slice(1)
+                          }`}
                     </Button>
-                    {/* <Button variant="outline" type="button">
-                          Login with Google
-                        </Button> */}
-                    {/* <FieldDescription className="text-center">
-                      Don&apos;t have an account?{" "}
-                      <a
-                        href="/signup"
-                        className={cn("underline", roleConfig.iconColor)}
-                      >
-                        Sign up
-                      </a>
-                    </FieldDescription> */}
+                  </Field>
+
+                  {/* Security Notice */}
+                  <Field>
+                    <div
+                      className={cn(
+                        "text-xs text-center p-2 rounded-md border",
+                        roleConfig.iconColor,
+                        roleConfig.cardBorder,
+                        roleConfig.iconBg
+                      )}
+                    >
+                      🔒 This portal is restricted to authorized {role}s only.
+                      Your access will be verified before login.
+                    </div>
                   </Field>
                 </FieldGroup>
               </form>

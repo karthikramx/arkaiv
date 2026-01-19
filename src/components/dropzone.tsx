@@ -73,7 +73,7 @@ interface Folder {
 export default function Dropzone() {
   const [uploading, setUploading] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
-    null
+    null,
   );
   const [selectedDocumentCopy, setSelectedDocumentCopy] =
     useState<Document | null>(null);
@@ -99,7 +99,10 @@ export default function Dropzone() {
         setUploading(true);
 
         for (const file of acceptedFiles) {
-          const fileRef = ref(storage, `documents/${file.name}`);
+          const fileRef = ref(
+            storage,
+            `documents/${crypto.randomUUID()}-${file.name}`,
+          );
           await uploadBytes(fileRef, file);
           const url = await getDownloadURL(fileRef);
           const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(2); // file size calc - MB
@@ -127,7 +130,7 @@ export default function Dropzone() {
         setUploading(false);
       }
     },
-    [userDoc, user]
+    [userDoc, user],
   );
 
   useEffect(() => {
@@ -135,7 +138,7 @@ export default function Dropzone() {
     const q = query(
       collection(db, "documents"),
       where("teamId", "==", userDoc?.currentTeam),
-      where("folderId", "==", "home")
+      where("folderId", "==", "home"),
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const docs: Document[] = snapshot.docs.map((doc) => ({
@@ -153,7 +156,7 @@ export default function Dropzone() {
     const q = query(
       collection(db, "folders"),
       where("teamId", "==", userDoc?.currentTeam),
-      where("parentFolderId", "==", "home")
+      where("parentFolderId", "==", "home"),
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const folders = snapshot.docs.map((doc) => ({
@@ -287,7 +290,7 @@ export default function Dropzone() {
                             await deleteStoredDocument(
                               "documents",
                               doc.id,
-                              doc.url
+                              doc.url,
                             );
                             toast("Document Deleted Successfully");
                           }
@@ -349,13 +352,13 @@ export default function Dropzone() {
                               onClick={() => {
                                 const changes = getChangedFields(
                                   selectedDocumentCopy,
-                                  selectedDocument
+                                  selectedDocument,
                                 );
                                 if (selectedDocument) {
                                   updateDocument(
                                     "documents",
                                     selectedDocument?.id,
-                                    changes
+                                    changes,
                                   );
                                   toast("Changes Saved");
                                   setSelectedDocumentCopy(selectedDocumentCopy);
@@ -543,7 +546,7 @@ export default function Dropzone() {
                                         <TrashIcon />
                                       </Button>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             )}
@@ -592,7 +595,7 @@ export default function Dropzone() {
                             await createFolder(
                               newFolderName,
                               "home",
-                              userDoc?.currentTeam
+                              userDoc?.currentTeam,
                             );
                           }
                           setCreateFolderDialog(false);
